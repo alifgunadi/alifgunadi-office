@@ -554,6 +554,7 @@ aside {
 
 .dock-row {
   display: flex;
+  flex-wrap: wrap; /* the targets take their own line, so the text field is never squeezed to a sliver */
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
@@ -576,7 +577,7 @@ aside {
 
 .dock-chips {
   display: flex;
-  flex: none;
+  flex: 1 1 calc(100% - var(--ctl-24) - var(--space-2)); /* next to the @, on a line of their own */
   flex-wrap: wrap;
   gap: var(--space-1);
   margin: 0;
@@ -620,8 +621,8 @@ aside {
 
 .dock-field {
   position: relative;
-  flex: 1;
-  min-width: 120px;
+  flex: 1 1 280px;
+  min-width: 200px;
 }
 
 .dock-field textarea {

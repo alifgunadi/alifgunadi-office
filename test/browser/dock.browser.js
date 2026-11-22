@@ -312,4 +312,15 @@ module.exports = [
       assert.equal(await val(page, `focusId`), null);
     },
   },
+  {
+    name: 'dock: with several targets the text field keeps a usable width (the targets take their own line) and shows no scrollbar',
+    async run(page) {
+      await val(page, `dock.chips = ['lead-software-engineer', 'lead-ui', 'lead-dba', 'lead-devops']; renderChips(); setDockState('expanded'); true`);
+      await page.sleep(300);
+      const m = JSON.parse(await val(page, `JSON.stringify({ field: document.querySelector('.dock-field').getBoundingClientRect().width, ta: dockInput.getBoundingClientRect().height, scroll: dockInput.scrollHeight, client: dockInput.clientHeight, chipsTop: document.getElementById('dock-chips').getBoundingClientRect().top, fieldTop: document.querySelector('.dock-field').getBoundingClientRect().top })`));
+      assert.ok(m.field >= 260, 'text field width ' + m.field);
+      assert.ok(m.scroll <= m.client + 1, 'the placeholder fits without a scrollbar ' + JSON.stringify(m));
+      assert.ok(m.fieldTop > m.chipsTop, 'the field is below the targets');
+    },
+  },
 ];

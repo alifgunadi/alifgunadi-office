@@ -24,7 +24,7 @@ module.exports = [
       assert.equal(await val(page, `document.getElementById('settings-close').getAttribute('aria-label')`), 'Tutup pengaturan');
       await page.key('Escape');
       await page.waitFor(`!document.getElementById('settings-dialog').open`);
-      assert.equal(await val(page, `document.activeElement.id`), 'btn-settings');
+      await page.waitFor(`document.activeElement.id === 'btn-settings'`, 3000); // the dialog hands focus back a moment after it closes
     },
   },
   {
@@ -51,7 +51,7 @@ module.exports = [
       assert.equal(await val(page, `document.getElementById('folder-list').hidden`), true);
       await page.key('Escape');
       await page.waitFor(`!document.getElementById('settings-dialog').open`);
-      assert.equal(await val(page, `document.activeElement.id`), 'dock-folder');
+      await page.waitFor(`document.activeElement.id === 'dock-folder'`, 3000);
     },
   },
   {
