@@ -123,6 +123,7 @@ module.exports = [
       await page.open(page.origin + '/');
       assert.equal(await val(page, `realMode()`), false);
       assert.equal(await val(page, `document.getElementById('dock-sim').hidden`), false);
+      await page.waitFor(`serverState !== null`, 8000); // the first message of the stream
       assert.equal(await val(page, `Array.isArray(serverState.tasks)`), false, 'the stream carries no tasks any more');
       assert.equal(await val(page, `taskStore.tasks.length`), 0);
     },
