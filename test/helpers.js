@@ -41,6 +41,15 @@ function request(port, method, urlPath, { body, headers = {} } = {}) {
   });
 }
 
+// Ends a server and everything it started (a task's program would otherwise be left running after a hard kill).
+function endTree(child) {
+  if (child.exitCode !== null || child.killed && child.signalCode) return;
+  if (process.platform === 'win32') {
+    try { require('node:child_process').spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true }); return; } catch { /* falls back */ }
+  }
+  child.kill('SIGKILL');
+}
+
 // options.dataDir: reuse a folder (a second server over the files of a first one); the caller removes it. options.prepare(dataDir) runs before the server starts.
 async function startServer(extraEnv = {}, options = {}) {
   const port = await freePort();
@@ -65,13 +74,13 @@ async function startServer(extraEnv = {}, options = {}) {
     port,
     dataDir,
     exit,
-    kill: () => { child.kill(); return new Promise((resolve) => (child.exitCode !== null ? resolve() : child.once('exit', resolve))); },
+    kill: () => { endTree(child); return new Promise((resolve) => (child.exitCode !== null ? resolve() : child.once('exit', resolve))); },
     token: () => fs.readFileSync(path.join(dataDir, 'token'), 'utf8').trim(),
     request: (method, urlPath, opts) => request(port, method, urlPath, opts),
     event: (body) => request(port, 'POST', '/event', { body, headers: header }),
     state: async () => JSON.parse((await request(port, 'GET', '/state')).text),
     async stop() {
-      child.kill();
+      endTree(child);
       await new Promise((resolve) => (child.exitCode !== null ? resolve() : child.once('exit', resolve)));
       if (!options.dataDir) fs.rmSync(dataDir, { recursive: true, force: true });
     },
