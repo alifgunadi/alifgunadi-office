@@ -58,7 +58,10 @@ than show activity, so it is **off by default** and strict when on.
   `ALIFGUNADI_OFFICE_SETTINGS_FILE`, outside the repository); (3) the first entry of `ALIFGUNADI_OFFICE_ROOTS`. **By default there are none**: until
   you choose a parent folder, the dock has no folder to run in. With (2) and (3) every ordinary sub-folder of the parent folder is a
   workspace (not names that start with a dot, `node_modules`, links, more than 200, or **this checkout**, so a prompt cannot edit
-  `hook.js` and friends, which Claude Code runs in every session). In `plan` mode a run is read-only; with an edit mode it is not, so
+  `hook.js` and friends, which Claude Code runs in every session). **Opt-in:** `ALIFGUNADI_OFFICE_ALLOW_CHECKOUT=1` lifts that last rule so
+  agents can work on this program's own code. In `plan` mode that is read-only and harmless; with an edit mode (`acceptEdits`, `auto`,
+  `dontAsk`) a prompt can change `hook.js`, `ensure-server.js` and the server, which then run as you in every Claude Code session, so review
+  every change (the repository is under git) before you restart anything. The server says which of the two it is in its log at start. In `plan` mode a run is read-only; with an edit mode it is not, so
   choose a parent folder that holds only what you want to expose, or use a fixed list.
   **Choosing the folder is a power of the login.** Anyone holding the session cookie can point the runner at another parent folder
   (the accepted risk of a replayed cookie, see below, now includes that). If you do not want the page to have it, set

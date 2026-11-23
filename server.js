@@ -63,7 +63,14 @@ if (restoredTasks) console.log('Restored ' + restoredTasks + ' task(s).');
 const runners = buildRunners();
 const integrations = createIntegrations(); // Jira, Figma and Penpot links as read-only context; off without a token (lib/integrations.js)
 const settings = createSettings();
-const workspaces = createWorkspaces({ settings, exclude: [__dirname] }); // no folders until a parent folder is chosen; this checkout is never one
+// No folders until a parent folder is chosen. This checkout is never one, unless ALIFGUNADI_OFFICE_ALLOW_CHECKOUT=1 says so: Claude Code runs
+// hook.js and ensure-server.js from here, so a run that may edit files in this folder can change what runs in every session (see SECURITY.md).
+const ALLOW_CHECKOUT = process.env.ALIFGUNADI_OFFICE_ALLOW_CHECKOUT === '1';
+const workspaces = createWorkspaces({ settings, exclude: ALLOW_CHECKOUT ? [] : [__dirname] });
+if (ALLOW_CHECKOUT) {
+  const editing = ['acceptEdits', 'auto', 'dontAsk'].includes(process.env.ALIFGUNADI_OFFICE_RUNNER_PERMISSION);
+  console.log('ALIFGUNADI_OFFICE_ALLOW_CHECKOUT=1: agents may work in this checkout' + (editing ? ' AND may edit it (' + process.env.ALIFGUNADI_OFFICE_RUNNER_PERMISSION + ')' : ' (read-only, plan mode)') + '.');
+}
 for (const note of workspaces.skipped) console.log('Workspace skipped: ' + note);
 const executor = createExecutor({ store: taskStore, runners, workspaces, onChange: () => broadcast() });
 const taskView = (t) => ({ id: t.id, batchId: t.batchId, deskId: t.deskId, text: t.text, workspaceId: t.workspaceId, runner: t.runner, status: t.status, createdAt: t.createdAt, startedAt: t.startedAt, finishedAt: t.finishedAt, exitCode: t.exitCode, error: t.error });

@@ -166,7 +166,8 @@ powershell -File stop-office.ps1; powershell -File start-office.ps1   # restart 
 
 Instead of a fixed list you can leave `ALIFGUNADI_OFFICE_WORKSPACES` out: then every sub-folder of a **parent folder** is a folder to work in. Pick
 the parent folder in **Pengaturan** (the gear in the header, then "Folder induk", or "Ubah folder induk…" in the Folder menu), or set `ALIFGUNADI_OFFICE_ROOTS`; until
-you do there is no folder to run in. This checkout itself is never offered. New project folders show up without a restart.
+you do there is no folder to run in. This checkout itself is not offered unless you set `ALIFGUNADI_OFFICE_ALLOW_CHECKOUT=1` (so agents can work on
+the office's own code; read [SECURITY.md](SECURITY.md) first, and keep the default `plan` mode unless you want edits). New project folders show up without a restart.
 
 Links to Jira, Figma and Penpot in a prompt can be read by the server as read-only context (set the tokens, see [SECURITY.md](SECURITY.md)); they show as chips under the input and in the Konteks tab.
 

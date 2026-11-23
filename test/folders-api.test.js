@@ -159,4 +159,20 @@ describe('what is never offered', () => {
       await post('/settings/root', { path: null });
     }
   });
+
+  it('...unless ALIFGUNADI_OFFICE_ALLOW_CHECKOUT=1 is set: then it is listed like any other sub-folder', async () => {
+    const own = await startServer({ ALIFGUNADI_OFFICE_HOME: home, ALIFGUNADI_OFFICE_ALLOW_CHECKOUT: '1' });
+    try {
+      const c = await login(own);
+      const parent = path.dirname(path.join(__dirname, '..'));
+      const check = await own.request('POST', '/settings/check', { body: { path: parent }, headers: { ...GUARD, Cookie: c } });
+      if (check.status === 200) { // the parent may be refused for other reasons on some machines
+        const set = await own.request('POST', '/settings/root', { body: { path: parent }, headers: { ...GUARD, Cookie: c } });
+        assert.equal(set.status, 200);
+        assert.ok(json(set).workspaces.some((w) => w.id === path.basename(path.join(__dirname, '..')).toLowerCase()), 'the checkout is a workspace');
+      }
+    } finally {
+      await own.stop();
+    }
+  });
 });
