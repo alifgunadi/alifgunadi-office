@@ -34,7 +34,9 @@ function freePort() {
   });
 }
 
-async function launch() {
+// options.env: extra environment for the throwaway server, applied last (a manual run can switch the real runner on instead of the fake one);
+// options.workDir: the folder the runner works in.
+async function launch(options = {}) {
   const port = await freePort();
   const debugPort = await freePort();
   const origin = `http://127.0.0.1:${port}`;
@@ -42,12 +44,13 @@ async function launch() {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'ao-browser-profile-'));
   // The runner is switched on with a fake program (test/fixtures/fake-runner.js), but the browser is not logged in: pages start as viewers.
   // The real-mode cases log in themselves through the address fragment, like the launchers do.
-  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ao-browser-work-'));
+  const workDir = options.workDir || fs.mkdtempSync(path.join(os.tmpdir(), 'ao-browser-work-'));
   const tokenFile = path.join(dataDir, 'token');
   const server = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
     env: {
       ...process.env, ALIFGUNADI_OFFICE_PORT: String(port), ALIFGUNADI_OFFICE_DATA_DIR: dataDir, ALIFGUNADI_OFFICE_AUTO_STOP: '0', ALIFGUNADI_OFFICE_TOKEN_FILE: tokenFile, ALIFGUNADI_OFFICE_SETTINGS_FILE: path.join(dataDir, 'settings.json'), ALIFGUNADI_OFFICE_HOME: path.join(dataDir, 'no-home'), ALIFGUNADI_OFFICE_ROOTS: dataDir,
       ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([path.join(ROOT, 'test', 'fixtures', 'fake-runner.js')]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + workDir,
+      ...(options.env || {}),
     },
     stdio: 'ignore',
   });
