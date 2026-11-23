@@ -41,7 +41,7 @@ There is nothing to `npm install`.
 powershell -File start-office.ps1     # starts the server in the background and opens your browser
 ```
 
-Start a Claude Code session and the agents appear at their desks. Stop with `powershell -File stop-office.ps1` or the Stop button on the page.
+Start a Claude Code session and the agents appear at their desks. Stop with `powershell -File stop-office.ps1` or Stop in the gear menu of the page.
 The server also starts by itself at the beginning of every Claude Code session.
 
 ### Optional: desktop app (own window, Desktop and Start Menu icon)
@@ -64,7 +64,7 @@ powershell -File install-autostart.ps1      # remove with uninstall-autostart.ps
 
 ### Update or uninstall
 
-- **Update:** `git pull` (or download the ZIP again), then `node install.js` and restart the office (Restart button on the page). Rebuild the desktop app only if `desktop\` changed.
+- **Update:** `git pull` (or download the ZIP again), then `node install.js` and restart the office (Restart in the gear menu of the page). Rebuild the desktop app only if `desktop\` changed.
 - **Uninstall:** run `stop-office.ps1`, `desktop\uninstall-shortcut.ps1` and `uninstall-autostart.ps1` if you used them, remove the Agent Office entries from `~/.claude/settings.json` (or restore the `.bak-<timestamp>` file `install.js` made), then delete the folder.
 
 ### Something does not work?
@@ -165,7 +165,7 @@ powershell -File stop-office.ps1; powershell -File start-office.ps1   # restart 
 ```
 
 Instead of a fixed list you can leave `AGENT_OFFICE_WORKSPACES` out: then every sub-folder of a **parent folder** is a folder to work in. Pick
-the parent folder in **Pengaturan** (the gear in the header, or "Ubah folder induk…" in the Folder menu), or set `AGENT_OFFICE_ROOTS`; until
+the parent folder in **Pengaturan** (the gear in the header, then "Folder induk", or "Ubah folder induk…" in the Folder menu), or set `AGENT_OFFICE_ROOTS`; until
 you do there is no folder to run in. This checkout itself is never offered. New project folders show up without a restart.
 
 Links to Jira, Figma and Penpot in a prompt can be read by the server as read-only context (set the tokens, see [SECURITY.md](SECURITY.md)); they show as chips under the input and in the Konteks tab.
@@ -192,7 +192,7 @@ Set `AGENT_OFFICE_PORT` in both the server environment and the `env` section of 
    the server hidden in the background if it is not already running. It does not open a browser; use
    `start-office.ps1` or the desktop app for that.
 2. On Windows logon (optional): run `install-autostart.ps1` once. Remove with `uninstall-autostart.ps1`.
-3. Stop the server: use the Stop button on the page, `stop-office.ps1`, or
+3. Stop the server: use Stop in the gear menu of the page, `stop-office.ps1`, or
    `Get-NetTCPConnection -LocalPort 4317 -State Listen | % { Stop-Process -Id $_.OwningProcess }`.
 
 ## Auto stop
@@ -208,6 +208,7 @@ the next time the server is started (one old generation is kept). `AGENT_OFFICE_
 `AGENT_OFFICE_DATA_DIR` moves the log and the stop marker somewhere else (the tests use it).
 
 ## Restart / Stop from the page
+Both are in the gear menu (Pengaturan) in the header, with "Folder induk" for the settings dialog.
 - **Restart**: the server starts a fresh instance (new code) and the page reloads automatically.
 - **Stop**: the server stops and stays stopped (prompts in an open session will not revive it)
   until a new Claude Code session starts or you run `start-office.ps1`.

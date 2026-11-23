@@ -40,7 +40,10 @@ module.exports = [
         assert.ok(Math.abs(cam.h - 52) <= 1, 'camera bar height ' + cam.h);
         assert.equal(await val(page, `getComputedStyle(document.querySelector('.minimap-card')).display`), 'none');
         assert.equal(await val(page, `getComputedStyle(document.getElementById('menu-pop')).display`), 'none');
-        assert.equal(await val(page, `getComputedStyle(document.querySelector('.menu-wrap')).display`), 'none', 'the top bar keeps its buttons');
+        assert.equal(await val(page, `getComputedStyle(document.querySelector('.menu-wrap')).display`), 'none', 'the hamburger is for phones');
+        const dk = await rect(page, '#dock'), st = await rect(page, '.stage');
+        assert.ok(dk.t >= st.b - 1, 'the dock is below the stage ' + JSON.stringify({ dk, st }));
+        assert.equal(await val(page, `document.getElementById('cam-walls-cycle').textContent`), 'Dinding: Potong');
         // the camera still turns and zooms
         await val(page, `document.getElementById('cam-right').click(); true`);
         assert.equal(await val(page, `camera.rot`), 1);
@@ -71,17 +74,17 @@ module.exports = [
     async run(page) {
       try {
         await phone(page);
-        await page.waitFor(`layout.cols === 2`);
+        await page.waitFor(`layout.cols === 0`);
         const peek = await rect(page, 'aside');
-        assert.ok(peek.t >= 800 - 109 && peek.t <= 800 - 107, 'a peek of about 108px (grabber and tabs) ' + JSON.stringify(peek));
+        assert.ok(peek.t >= 800 - 251 && peek.t <= 800 - 249, 'a peek of about 250px (grabber, tabs, the first card and a hint) ' + JSON.stringify(peek));
         assert.equal(await val(page, `document.getElementById('sheet-toggle').getAttribute('aria-expanded')`), 'false');
-        // closed: the content below the tabs cannot be reached by keyboard
-        assert.equal(await val(page, `getComputedStyle(document.getElementById('panel-activity')).visibility`), 'hidden');
+        // closed: the filters are not shown, only the tabs, the first card and a hint
+        assert.equal(await val(page, `getComputedStyle(document.querySelector('.filters')).display`), 'none');
         await val(page, `document.getElementById('sheet-toggle').click(); true`);
         await page.sleep(400);
         const open = await rect(page, 'aside');
         assert.ok(open.h > 300 && open.t < 800 - 300, 'opened ' + JSON.stringify(open));
-        assert.equal(await val(page, `getComputedStyle(document.getElementById('panel-activity')).visibility`), 'visible');
+        assert.equal(await val(page, `getComputedStyle(document.querySelector('.filters')).display`), 'flex');
         await val(page, `document.getElementById('tab-tasks').focus(); true`);
         await page.key('Escape');
         await page.waitFor(`!document.getElementById('side-panel').classList.contains('is-open')`);
@@ -94,26 +97,33 @@ module.exports = [
     },
   },
   {
-    name: 'responsive: phone moves the top bar buttons into a menu; Stop asks first; the motion choice is remembered',
+    name: 'responsive: phone keeps the gear (Restart and Stop live in its menu, Stop asks first) and a menu with the rest; the motion choice is remembered',
     async run(page) {
       try {
         await phone(page);
-        assert.equal(await val(page, `getComputedStyle(document.querySelector('.topbar .controls')).display`), 'none');
+        assert.equal(await val(page, `getComputedStyle(document.querySelector('.topbar .controls')).display`), 'flex', 'the gear stays in the bar');
+        const gear = await rect(page, '#btn-settings');
+        assert.ok(gear.w >= 44 && gear.h >= 44, 'gear size ' + JSON.stringify(gear));
         const btn = await rect(page, '#btn-menu');
         assert.ok(btn.w >= 44 && btn.h >= 44, 'menu button size ' + JSON.stringify(btn));
         await val(page, `document.getElementById('btn-menu').click(); true`);
         assert.equal(await val(page, `document.getElementById('btn-menu').getAttribute('aria-expanded')`), 'true');
-        assert.deepEqual(await val(page, `[...document.querySelectorAll('#menu-pop .menu-item')].map((b) => b.textContent)`), ['Pengaturan', 'Folder & Runner', 'Restart', 'Stop…', 'Gerak berkurang', 'Tentang']);
-        assert.equal(await val(page, `document.activeElement.textContent`), 'Pengaturan');
-        await page.key('ArrowDown');
+        assert.deepEqual(await val(page, `[...document.querySelectorAll('#menu-pop .menu-item')].map((b) => b.textContent)`), ['Folder & Runner', 'Gerak berkurang', 'Tentang'], 'Settings, Restart and Stop are in the gear menu, not here');
         assert.equal(await val(page, `document.activeElement.textContent`), 'Folder & Runner');
-        // Stop: a confirmation, and Batal comes back to the menu without stopping anything
-        await val(page, `[...document.querySelectorAll('#menu-pop .menu-item')].find((b) => b.textContent === 'Stop…').click(); true`);
-        assert.match(await val(page, `document.querySelector('#menu-pop .confirm-row').textContent`), /Hentikan server/);
-        await val(page, `window.__stopped = 0; document.getElementById('btn-stop').addEventListener('click', () => window.__stopped++, true); true`);
-        await val(page, `document.querySelector('#menu-pop .confirm-row .btn--secondary').click(); true`);
+        await page.key('ArrowDown');
+        assert.equal(await val(page, `document.activeElement.textContent`), 'Gerak berkurang');
+        // the gear menu: Stop asks first, and Batal comes back to the menu without stopping anything
+        await val(page, `document.getElementById('btn-menu').click(); window.__stopped = 0; window.__stop = stopServer; stopServer = async () => { window.__stopped++; }; document.getElementById('btn-settings').click(); document.getElementById('btn-stop').click(); true`);
+        assert.match(await val(page, `document.querySelector('#gear-pop .confirm-row').textContent`), /Hentikan server/);
+        assert.equal(await val(page, `document.getElementById('gear-pop').hidden`), false);
+        await val(page, `document.querySelector('#gear-pop .confirm-row .btn--secondary').click(); true`);
         assert.equal(await val(page, `window.__stopped`), 0);
-        assert.equal(await val(page, `document.querySelectorAll('#menu-pop .menu-item').length`), 6);
+        assert.equal(await val(page, `document.querySelectorAll('#gear-pop [role=menuitem]').length`), 3);
+        await val(page, `document.getElementById('btn-stop').click(); document.querySelector('#gear-pop .confirm-row .btn--danger').click(); true`);
+        assert.equal(await val(page, `window.__stopped`), 1, 'Stop after the confirmation');
+        await val(page, `stopServer = window.__stop; true`);
+        assert.equal(await val(page, `document.getElementById('gear-pop').hidden`), true);
+        await val(page, `document.getElementById('btn-menu').click(); true`);
         // reduced motion on the page
         await val(page, `[...document.querySelectorAll('#menu-pop .menu-item')].find((b) => b.textContent === 'Gerak berkurang').click(); true`);
         assert.equal(await val(page, `document.documentElement.classList.contains('reduce-motion') && reduced === true && localStorage.getItem(MOTION_KEY)`), '1');
@@ -121,8 +131,8 @@ module.exports = [
         await page.key('Escape');
         assert.equal(await val(page, `document.getElementById('menu-pop').hidden`), true);
         assert.equal(await val(page, `document.activeElement.id`), 'btn-menu');
-        // Pengaturan opens the dialog from the menu
-        await val(page, `document.getElementById('btn-menu').click(); document.querySelector('#menu-pop .menu-item').click(); true`);
+        // Folder induk opens the dialog from the gear menu
+        await val(page, `document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
         await page.waitFor(`document.getElementById('settings-dialog').open`);
         await val(page, `closeSettings(); true`);
         // Tentang
@@ -138,7 +148,7 @@ module.exports = [
     async run(page) {
       try {
         await phone(page);
-        await page.waitFor(`layout.cols === 2`);
+        await page.waitFor(`layout.cols === 0`);
         assert.equal(await val(page, `getComputedStyle(document.getElementById('legend')).display`), 'none');
         const chip = await rect(page, '#legend-toggle');
         assert.ok(chip.h >= 44, 'legend chip height ' + chip.h);
@@ -148,26 +158,24 @@ module.exports = [
         assert.equal(await val(page, `document.querySelectorAll('#legend .zone-chip').length`), 5);
         await val(page, `document.getElementById('legend-toggle').click(); true`);
         assert.equal(await val(page, `getComputedStyle(document.getElementById('legend')).display`), 'none');
-        // the desk chip
-        const f = await rect(page, '#focus-desk');
+        // "Fokus ke meja": a chip for every desk, each at least 44px
+        const f = await rect(page, '.focus-chip');
         assert.ok(f.h >= 44, 'focus chip height ' + f.h);
-        await val(page, `document.getElementById('focus-desk').click(); true`);
-        await page.waitFor(`!document.getElementById('focus-list').hidden`);
-        const n = await val(page, `document.querySelectorAll('#focus-list [role=option]').length`);
-        assert.ok(n >= 12, 'every desk is listed: ' + n);
-        const opts = await val(page, `JSON.stringify([...document.querySelectorAll('#focus-list [role=option]')].map((o) => o.textContent))`);
-        assert.match(opts, /Lead QA/);
-        await val(page, `[...document.querySelectorAll('#focus-list [role=option]')].find((o) => o.textContent === 'Lead QA').click(); true`);
+        const names = await val(page, `JSON.stringify([...document.querySelectorAll('#focus-chips .focus-chip')].map((o) => o.textContent))`);
+        assert.ok(JSON.parse(names).length >= 12, 'every desk has a chip: ' + names);
+        const mainLabel = await val(page, `ROLES.main.label`);
+        assert.ok(JSON.parse(names).includes(mainLabel), 'the main desk is on a chip under the label of its plate: ' + names);
+        assert.match(names, /Lead QA/);
+        assert.equal(await val(page, `document.getElementById('focus-chips').querySelector('[data-desk=main]').getAttribute('aria-label')`), mainLabel + ' (meja sendiri)');
+        await val(page, `[...document.querySelectorAll('#focus-chips .focus-chip')].find((o) => o.textContent === 'Lead QA').click(); true`);
         await page.waitFor(`mainAgent().man`);
-        assert.equal(await val(page, `document.getElementById('focus-list').hidden`), true);
-        assert.equal(await val(page, `document.activeElement.id`), 'focus-desk');
       } finally { await back(page); }
     },
   },
   {
     name: 'responsive: the chip and the bar are for small screens only; the wide page does not show them',
     async run(page) {
-      for (const id of ['focus-desk', 'legend-toggle', 'btn-menu', 'sheet-toggle']) {
+      for (const id of ['focus-chips', 'legend-toggle', 'btn-menu', 'sheet-toggle']) {
         assert.equal(await val(page, `document.getElementById('${id}').getClientRects().length`), 0, id + ' at 1440');
       }
       assert.equal(await val(page, `document.getElementById('task-pos').hidden`), true);
@@ -178,7 +186,7 @@ module.exports = [
     async run(page) {
       try {
         await phone(page);
-        await page.waitFor(`layout.cols === 2`);
+        await page.waitFor(`layout.cols === 0`);
         // the busiest state: the dock open with a target, the sheet open with task cards
         await val(page, `dockInput.focus(); dock.chips = ['lead-qa']; renderChips(); setDockState('expanded'); OfficeTasks.enqueue(taskStore, { text: 'x', targets: ['lead-qa', 'lead-ui'], folder: 'f', runner: 'claude' }, Date.now()); tasksChanged(); selectTab(tabButtons[0], false); setSheet(true); true`);
         await page.sleep(500);

@@ -18,6 +18,8 @@ module.exports = [
     async run(page) {
       assert.equal(await val(page, `document.getElementById('btn-settings').getAttribute('aria-label')`), 'Pengaturan');
       await val(page, `document.getElementById('btn-settings').focus(); true`);
+      await page.key('Enter', { text: '\r' }); // the gear opens its menu; its first entry is Folder induk
+      await page.waitFor(`document.activeElement.id === 'gear-folder'`);
       await page.key('Enter', { text: '\r' });
       await page.waitFor(`document.getElementById('settings-dialog').open`);
       assert.equal(await val(page, `document.getElementById('settings-dialog').getAttribute('aria-labelledby')`), 'settings-title');
@@ -30,7 +32,7 @@ module.exports = [
   {
     name: 'settings: as a viewer the folder cannot be edited and the dialog says how to log in',
     async run(page) {
-      await val(page, `document.getElementById('btn-settings').click(); true`);
+      await val(page, `document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
       await page.waitFor(`document.getElementById('settings-dialog').open`);
       await page.waitFor(`document.getElementById('settings-status').textContent !== ''`);
       assert.equal(await val(page, `document.getElementById('settings-root').disabled`), true);
@@ -63,7 +65,7 @@ module.exports = [
         return { status: 404, data: null };
       }`);
       try {
-        await val(page, `document.getElementById('btn-settings').click(); true`);
+        await val(page, `document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
         await page.waitFor(`document.getElementById('settings-root').value === 'C:\\\\projects'`);
         assert.match(await status(page), /4 folder ditemukan/);
         assert.equal(await val(page, `document.getElementById('settings-save').disabled`), true, 'nothing changed yet');
@@ -105,7 +107,7 @@ module.exports = [
         return { status: 404, data: null };
       }`);
       try {
-        await val(page, `session.real = true; dock.folder = 'old'; document.getElementById('btn-settings').click(); true`);
+        await val(page, `session.real = true; dock.folder = 'old'; document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
         await page.waitFor(`document.getElementById('settings-root').value === 'C:\\\\projects'`);
         await val(page, `document.getElementById('settings-root').select(); true`);
         await page.type('D:\\apps');
@@ -134,7 +136,7 @@ module.exports = [
         return { status: 404, data: null };
       }`);
       try {
-        await val(page, `document.getElementById('btn-settings').click(); true`);
+        await val(page, `document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
         await page.waitFor(`document.getElementById('settings-root').value === 'D:\\\\apps'`);
         assert.equal(await val(page, `document.getElementById('settings-reset').disabled`), false);
         await val(page, `document.getElementById('settings-root').select(); true`);
@@ -158,7 +160,7 @@ module.exports = [
     async run(page) {
       await stub(page, `(m, u) => (u === '/settings' ? { status: 200, data: { root: { source: 'fixed', locked: true, root: null, error: null, count: 3 } } } : { status: 404, data: null })`);
       try {
-        await val(page, `document.getElementById('btn-settings').click(); true`);
+        await val(page, `document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
         await page.waitFor(`document.getElementById('settings-status').textContent.includes('dikunci')`);
         assert.equal(await val(page, `document.getElementById('settings-root').disabled`), true);
         assert.equal(await val(page, `document.getElementById('settings-save').disabled`), true);
@@ -174,7 +176,7 @@ module.exports = [
     name: 'settings: the dialog fits a phone-sized window with its buttons reachable',
     async run(page) {
       await page.viewport(390, 700);
-      await val(page, `document.getElementById('btn-settings').click(); true`);
+      await val(page, `document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
       await page.waitFor(`document.getElementById('settings-dialog').open`);
       const r = await val(page, `(() => { const b = document.getElementById('settings-dialog').getBoundingClientRect(); return { l: b.left, r: b.right, w: innerWidth, hs: document.documentElement.scrollWidth }; })()`);
       assert.ok(r.l >= 0 && r.r <= r.w, JSON.stringify(r));

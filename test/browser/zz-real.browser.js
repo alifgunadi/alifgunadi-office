@@ -107,7 +107,7 @@ module.exports = [
     async run(page) {
       await page.open(page.origin + '/#token=' + page.token());
       await page.waitFor(`realMode()`);
-      await val(page, `document.getElementById('btn-settings').click(); true`);
+      await val(page, `document.getElementById('btn-settings').click(); document.getElementById('gear-folder').click(); true`);
       await page.waitFor(`document.getElementById('settings-status').textContent.includes('dikunci')`);
       assert.equal(await val(page, `document.getElementById('settings-root').disabled`), true);
       assert.match(await val(page, `document.getElementById('settings-status').textContent`), /1 folder tersedia/);

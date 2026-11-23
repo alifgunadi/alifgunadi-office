@@ -143,7 +143,6 @@ setDlg.addEventListener('close', () => {
   settingsState.opener = null;
   if (o && document.contains(o)) o.focus();
 });
-document.getElementById('btn-settings').addEventListener('click', () => openSettings());
 document.getElementById('settings-close').addEventListener('click', closeSettings);
 document.getElementById('settings-cancel').addEventListener('click', closeSettings);
 setReset.addEventListener('click', () => settingsApply(null));

@@ -61,13 +61,15 @@ restartBtn.addEventListener('click', async () => {
   showNotice('Restart did not come back. Run start-office.ps1 or open a new Claude Code session, then reload this page.');
 });
 
-stopBtn.addEventListener('click', async () => {
+// On a phone Stop asks first (askStop, responsive.js); everywhere else it acts at once.
+stopBtn.addEventListener('click', () => { if (mqPhone.matches) askStop(); else stopServer(); });
+async function stopServer() {
   if (!(await sendControl('stop'))) return;
   halted = true;
   source.close();
   setStatus('stopped', false);
   showNotice('Server stopped. It starts again when you open a new Claude Code session or run start-office.ps1. Then reload this page.');
-});
+}
 
 canvas.addEventListener('pointermove', (e) => {
   const r = canvas.getBoundingClientRect();
@@ -110,6 +112,7 @@ function rebuildDesks() {
     if (sig !== idSig) { idSig = sig; layoutDirty = true; }
     syncAgents(desks);
     syncAgentList(desks);
+    syncFocusChips();
     queueAnnouncements(desks);
     updateChrome(desks);
     if (!desks.length) { ariaKey = ''; canvas.setAttribute('aria-label', 'Office floorplan. No agents yet.'); }

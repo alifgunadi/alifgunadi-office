@@ -306,7 +306,7 @@ function drawHoverTip() {
   const p = layout.byId.get(hover.id);
   if (!p) return;
   const d = deskMap.get(hover.id) || {};
-  const text = hover.kind === 'own' ? 'Kembali ke meja AlifGunadi' : roleOf(hover.id).label + ' · ' + (d.status || 'idle');
+  const text = hover.kind === 'own' ? 'Kembali ke meja CEO' : roleOf(hover.id).label + ' · ' + (d.status || 'idle');
   const c = pj(p.x + CX * p.k, p.y + 90 * p.k, 74);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.font = '700 12px ' + FONT;

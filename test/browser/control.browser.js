@@ -15,11 +15,11 @@ const FLOOR = `(() => { const nav = layoutNav(layout); for (let y = layout.H - 2
 
 module.exports = [
   {
-    name: 'control: every desk front and the lounge can be reached from AlifGunadi\'s seat in all three layouts',
+    name: 'control: every desk front and the lounge can be reached from AlifGunadi\'s seat at every width (the floor plan is the same, only smaller)',
     async run(page) {
-      for (const [w, h] of [[1440, 900], [800, 700], [600, 700]]) {
+      for (const [w, h] of [[1440, 900], [1024, 768], [390, 844]]) {
         await page.viewport(w, h);
-        await page.waitFor(`layout && layout.cols === ${w === 1440 ? 0 : w === 800 ? 3 : 2}`);
+        await page.waitFor(`layout && layout.cols === 0`);
         const r = JSON.parse(await val(page, `JSON.stringify((() => {
           const nav = layoutNav(layout), me = layout.byId.get('main'), s = deskSeat(me), bad = [];
           for (const p of layout.places) {
@@ -195,16 +195,22 @@ module.exports = [
     },
   },
   {
-    name: 'control: a layout change (window narrowed to the stacked rooms) sends him back to his desk',
+    name: 'control: narrowing the window keeps the walk (same floor plan), but a layout change (a guest desk adds the Guests strip) sends him back to his desk',
     async run(page) {
       await reduced(page);
       const f = await val(page, FLOOR);
       await clickWorld(page, f[0], f[1]);
       await page.waitFor(`mainAgent().man`);
       await page.viewport(600, 700, { reducedMotion: true });
-      await page.waitFor(`layout.cols === 2`);
-      await page.waitFor(`!mainAgent().man`);
-      assert.equal(await val(page, `mainAgent().s`), 0);
+      await page.waitFor(`layout.cols === 0 && availW < 700`);
+      assert.ok(await val(page, `!!mainAgent().man`), 'still standing where he was');
+      await val(page, `serverState.desks['guest-a'] = { id: 'guest-a', status: 'idle', updatedAt: Date.now() }; rebuildDesks(); true`);
+      try {
+        await page.waitFor(`!mainAgent().man`);
+        assert.equal(await val(page, `mainAgent().s`), 0);
+      } finally {
+        await val(page, `delete serverState.desks['guest-a']; rebuildDesks(); true`);
+      }
     },
   },
   {

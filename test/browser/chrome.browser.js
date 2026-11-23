@@ -7,41 +7,66 @@ const val = (page, expr) => page.evaluate(expr);
 
 module.exports = [
   {
-    name: 'wide isometric floorplan at 1440px, like the design; stacked rooms below the threshold',
+    name: 'the isometric floor plan is used at every width and fits the stage (the whole floor, scaled down on a phone)',
     async run(page) {
       assert.equal(await val(page, 'layout.cols'), 0, 'cols at 1440');
       const w = await val(page, 'Math.round(availW)');
       assert.ok(w > 1000 && w < 1100, 'stage width ' + w);
-      await page.viewport(1280, 800);
-      assert.equal(await val(page, 'layout.cols'), 0, 'cols at 1280');
-      await page.viewport(1100, 800);
-      assert.equal(await val(page, 'layout.cols'), 0, 'cols at 1100: the side panel is below the stage, so the stage is wide');
-      await page.viewport(800, 700);
-      assert.equal(await val(page, 'layout.cols'), 3, 'cols at 800');
-      await page.viewport(600, 700);
-      assert.equal(await val(page, 'layout.cols'), 2, 'cols at 600');
+      for (const [vw, vh] of [[1280, 800], [1100, 800], [1024, 768], [800, 700], [600, 700], [390, 844]]) {
+        await page.viewport(vw, vh);
+        await page.waitFor(`layout.cols === 0 && parseFloat(canvas.style.width) > 0`);
+        await page.sleep(200);
+        const r = JSON.parse(await val(page, `JSON.stringify({ cols: layout.cols, cw: parseFloat(canvas.style.width), avail: availW, scrolls: stage.scrollWidth > stage.clientWidth + 1 })`));
+        assert.equal(r.cols, 0, 'cols at ' + vw);
+        assert.ok(r.cw <= r.avail + 1 && !r.scrolls, 'the floor fits the stage at ' + vw + ': ' + JSON.stringify(r));
+      }
     },
   },
   {
-    name: 'top bar: title, live pill, Restart and Stop use the 32px control size',
+    name: 'top bar: title, live pill and the gear; the gear menu lists Folder induk, Restart and Stop (Stop in the danger colours)',
     async run(page) {
       const r = JSON.parse(await val(page, `JSON.stringify({
         title: document.querySelector('.topbar h1').textContent, conn: document.getElementById('conn').textContent,
-        restart: document.getElementById('btn-restart').getBoundingClientRect().height,
-        stop: document.getElementById('btn-stop').getBoundingClientRect().height,
-        stopBorder: getComputedStyle(document.getElementById('btn-stop')).borderTopColor })`));
+        buttons: [...document.querySelectorAll('.topbar button')].filter((b) => b.getClientRects().length).map((b) => b.id),
+        hidden: document.getElementById('gear-pop').hidden, exp: document.getElementById('btn-settings').getAttribute('aria-expanded') })`));
       assert.equal(r.title, "ALIF'S OFFICE");
       assert.equal(r.conn, 'live');
-      assert.equal(r.restart, 32);
-      assert.equal(r.stop, 32);
-      assert.equal(r.stopBorder, 'rgb(229, 72, 77)');
+      assert.deepEqual(r.buttons, ['btn-settings'], 'the bar shows only the gear at 1440');
+      assert.deepEqual([r.hidden, r.exp], [true, 'false']);
+      await val(page, `document.getElementById('btn-settings').click(); true`);
+      const m = JSON.parse(await val(page, `JSON.stringify({
+        exp: document.getElementById('btn-settings').getAttribute('aria-expanded'), role: document.getElementById('gear-pop').getAttribute('role'),
+        items: [...document.querySelectorAll('#gear-pop [role=menuitem]')].map((b) => b.textContent), focus: document.activeElement.id,
+        stopColor: getComputedStyle(document.getElementById('btn-stop')).color, stopBg: getComputedStyle(document.getElementById('btn-stop')).backgroundColor })`));
+      assert.deepEqual([m.exp, m.role], ['true', 'menu']);
+      assert.deepEqual(m.items, ['Folder induk', 'Restart', 'Stop']);
+      assert.equal(m.focus, 'gear-folder');
+      assert.equal(m.stopBg, 'rgb(253, 236, 236)', 'Stop has the danger background');
+      // keys: arrows move (and wrap), Escape closes and gives the focus back to the gear
+      await page.key('ArrowDown');
+      assert.equal(await val(page, `document.activeElement.id`), 'btn-restart');
+      await page.key('End');
+      assert.equal(await val(page, `document.activeElement.id`), 'btn-stop');
+      await page.key('ArrowDown');
+      assert.equal(await val(page, `document.activeElement.id`), 'gear-folder');
+      await page.key('Escape');
+      assert.deepEqual(await val(page, `[document.getElementById('gear-pop').hidden, document.activeElement.id, document.getElementById('btn-settings').getAttribute('aria-expanded')]`), [true, 'btn-settings', 'false']);
+      // a click outside closes it
+      await val(page, `document.getElementById('btn-settings').click(); true`);
+      await page.click(300, 400);
+      assert.equal(await val(page, `document.getElementById('gear-pop').hidden`), true);
+      // Restart and Stop do what the old buttons did: they ask the server (the call is intercepted here, nothing is stopped)
+      await val(page, `window.__asked = []; window.__send = sendControl; sendControl = async (a) => { window.__asked.push(a); return false; }; document.getElementById('btn-settings').click(); document.getElementById('btn-restart').click(); document.getElementById('btn-settings').click(); document.getElementById('btn-stop').click(); true`);
+      await page.waitFor(`window.__asked.length >= 2`);
+      assert.deepEqual(await val(page, `window.__asked`), ['restart', 'stop']);
+      await val(page, `sendControl = window.__send; true`);
     },
   },
   {
     name: 'zone legend has the five zones and lets pointer events through to the canvas',
     async run(page) {
       const labels = JSON.parse(await val(page, `JSON.stringify([...document.querySelectorAll('#legend li')].map(li => li.textContent))`));
-      assert.deepEqual(labels, ['AlifGunadi Office', 'Product', 'Engineering', 'QA', 'Lounge & Pantry']);
+      assert.deepEqual(labels, ['CEO Office', 'Product', 'Engineering', 'QA', 'Lounge & Pantry']);
       const hit = await val(page, `(() => { const r = document.querySelector('#legend li').getBoundingClientRect(); const el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return el.closest('#legend') === null; })()`);
       assert.equal(hit, true, 'legend must not capture the pointer');
     },
@@ -89,7 +114,7 @@ module.exports = [
   {
     name: 'keyboard focus shows the 2px ring in the focus colour',
     async run(page) {
-      const r = JSON.parse(await val(page, `(() => { const b = document.getElementById('btn-restart'); b.focus(); const c = getComputedStyle(b); return JSON.stringify({ w: c.outlineWidth, s: c.outlineStyle, c: c.outlineColor, f: document.activeElement === b, vis: b.matches(':focus-visible') }); })()`));
+      const r = JSON.parse(await val(page, `(() => { const b = document.getElementById('btn-settings'); b.focus(); const c = getComputedStyle(b); return JSON.stringify({ w: c.outlineWidth, s: c.outlineStyle, c: c.outlineColor, f: document.activeElement === b, vis: b.matches(':focus-visible') }); })()`));
       assert.deepEqual([r.f, r.vis, r.s, r.c], [true, true, 'solid', 'rgb(37, 99, 235)']);
       // the browser rounds outline widths down to whole device pixels (2 CSS px is 1.6 at 125% scaling)
       assert.ok(parseFloat(r.w) >= 1.5, 'ring width ' + r.w);
@@ -101,8 +126,12 @@ module.exports = [
       await page.viewport(1440, 900, { touch: true });
       const coarse = await val(page, `matchMedia('(any-pointer: coarse)').matches`);
       assert.equal(coarse, true, 'touch emulation should make any-pointer coarse');
-      const r = JSON.parse(await val(page, `JSON.stringify({ restart: document.getElementById('btn-restart').getBoundingClientRect().height, tab: document.getElementById('tab-activity').getBoundingClientRect().height })`));
-      assert.deepEqual([r.restart, r.tab], [44, 44]);
+      const r = JSON.parse(await val(page, `JSON.stringify({ gear: document.getElementById('btn-settings').getBoundingClientRect().height, tab: document.getElementById('tab-activity').getBoundingClientRect().height })`));
+      assert.deepEqual([r.gear, r.tab], [44, 44]);
+      await val(page, `document.getElementById('btn-settings').click(); true`);
+      const items = await val(page, `[...document.querySelectorAll('#gear-pop [role=menuitem]')].map((b) => b.getBoundingClientRect().height)`);
+      assert.ok(items.length === 3 && items.every((h) => h >= 44), 'menu items ' + items);
+      await val(page, `document.getElementById('btn-settings').click(); true`);
       await page.viewport(1440, 900, { touch: false });
     },
   },

@@ -6,11 +6,13 @@ const CAMERA_KEY = 'agent-office.camera';
 const CAMERA_MIN_KEY = 'agent-office.camera.minimized';
 const ZOOMS = [0.8, 1, 1.3];
 const WALL_MODES = ['up', 'cut', 'down'];
+const WALL_LABELS = { up: 'Naik', cut: 'Potong', down: 'Turun' };
 const WALL_NAMES = { up: 'naik (semua dinding)', cut: 'potong (dua dinding belakang)', down: 'turun (tanpa dinding)' };
 
 const cameraEl = document.getElementById('camera');
 const cameraBody = document.getElementById('camera-body');
 const readoutEl = document.getElementById('camera-readout');
+const wallCycleBtn = document.getElementById('cam-walls-cycle');
 const minBtn = document.getElementById('camera-min');
 const compassEl = document.getElementById('camera-compass');
 const zoomRange = document.getElementById('cam-zoom');
@@ -75,8 +77,8 @@ const turnBy = (steps) => setCamera({ rot: camera.rot + steps });
 const zoomBy = (steps) => setCamera({ zoom: ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, ZOOMS.indexOf(camera.zoom) + steps))] });
 const resetCamera = () => setCamera({ rot: 0, zoom: 1, walls: 'cut' });
 
-// Turning only exists in the wide isometric layout; in the stacked rooms the view is oblique and has nothing to turn.
-const canTurn = () => !layout || layout.cols === 0;
+// The camera turns at every screen width (the floor plan is isometric on phones and tablets too).
+const canTurn = () => true;
 
 // ---- the control card
 
@@ -84,6 +86,8 @@ function syncCameraUi() {
   const turnable = canTurn();
   const shownRot = turnable ? camera.rot : 0;
   setText(readoutEl, shownRot * 90 + '° · ' + Math.round(camera.zoom * 100) + '%');
+  setText(wallCycleBtn, 'Dinding: ' + WALL_LABELS[camera.walls]);
+  wallCycleBtn.setAttribute('aria-label', 'Mode dinding: ' + WALL_LABELS[camera.walls] + '. Ketuk untuk mengganti');
   compassEl.style.transform = 'rotate(' + (-shownRot * 90) + 'deg)';
   zoomRange.value = String(ZOOMS.indexOf(camera.zoom));
   zoomRange.setAttribute('aria-valuetext', Math.round(camera.zoom * 100) + '%');
@@ -92,7 +96,6 @@ function syncCameraUi() {
   for (const b of [rotateLeftBtn, rotateRightBtn, ...wallButtons]) {
     b.setAttribute('aria-disabled', String(!turnable));
     b.classList.toggle('is-disabled', !turnable);
-    b.title = turnable ? '' : 'Hanya tersedia di tampilan lebar';
   }
   for (const b of wallButtons) {
     const on = b.dataset.walls === camera.walls;
@@ -111,6 +114,7 @@ rotateLeftBtn.addEventListener('click', () => { if (canTurn()) turnBy(-1); });
 rotateRightBtn.addEventListener('click', () => { if (canTurn()) turnBy(1); });
 zoomOutBtn.addEventListener('click', () => zoomBy(-1));
 zoomInBtn.addEventListener('click', () => zoomBy(1));
+wallCycleBtn.addEventListener('click', () => setCamera({ walls: WALL_MODES[(WALL_MODES.indexOf(camera.walls) + 1) % WALL_MODES.length] }));
 zoomRange.addEventListener('input', () => setCamera({ zoom: ZOOMS[Number(zoomRange.value)] }));
 
 for (const b of wallButtons) {

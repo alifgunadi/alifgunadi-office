@@ -3,7 +3,7 @@
 // ---------- page chrome around the canvas: zone legend, side-panel tabs, the AlifGunadi card ----------
 
 // Zone legend: fixed chips in the corner of the stage (they replace the labels that used to float over the floor).
-const LEGEND_ZONES = [['trainer', 'AlifGunadi Office'], ['product', 'Product'], ['eng', 'Engineering'], ['qa', 'QA'], ['lounge', 'Lounge & Pantry']];
+const LEGEND_ZONES = [['trainer', 'CEO Office'], ['product', 'Product'], ['eng', 'Engineering'], ['qa', 'QA'], ['lounge', 'Lounge & Pantry']];
 (function buildLegend() {
   const list = document.getElementById('legend');
   for (const [key, label] of LEGEND_ZONES) {

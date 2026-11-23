@@ -16,11 +16,13 @@
   <header class="topbar">
     <h1>ALIF'S OFFICE</h1>
     <span id="conn" aria-live="polite">disconnected</span>
-    <div class="controls">
-      <button id="btn-settings" class="icon-btn" type="button" aria-label="Pengaturan" title="Pengaturan" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.4 13.5a7.7 7.7 0 0 0 0-3l1.9-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 1.9 1.5a7.7 7.7 0 0 0 0 3l-1.9 1.5 2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4z"/></svg></button>
-      <button id="btn-restart" class="btn btn--secondary" type="button" title="Restart the server and reload this page">Restart</button>
-      <button id="btn-stop" class="btn btn--danger-soft" type="button"
-        title="Stop the server until a new Claude Code session or start-office.ps1">Stop</button>
+    <div class="controls gear-wrap">
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Pengaturan" title="Pengaturan" aria-haspopup="menu" aria-expanded="false" aria-controls="gear-pop"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM19.4 13.5a7.7 7.7 0 0 0 0-3l1.9-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 1.9 1.5a7.7 7.7 0 0 0 0 3l-1.9 1.5 2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4z"/></svg></button>
+      <ul class="popover popover--menu menu-pop" id="gear-pop" role="menu" aria-label="Pengaturan" hidden>
+        <li role="none"><button class="menu-item" id="gear-folder" type="button" role="menuitem">Folder induk</button></li>
+        <li role="none"><button class="menu-item" id="btn-restart" type="button" role="menuitem" title="Restart the server and reload this page">Restart</button></li>
+        <li role="none"><button class="menu-item is-danger" id="btn-stop" type="button" role="menuitem" title="Stop the server until a new Claude Code session or start-office.ps1">Stop</button></li>
+      </ul>
     </div>
     <div class="menu-wrap">
       <button id="btn-menu" class="icon-btn icon-btn--lg" type="button" aria-label="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-pop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
@@ -36,14 +38,15 @@
         <button class="chip legend-toggle" id="legend-toggle" type="button" aria-expanded="false" aria-controls="legend">5 zona · ketuk</button>
         <ul class="legend" id="legend" aria-label="Office zones"></ul>
         <div class="focus-wrap">
-          <button class="btn btn--secondary focus-btn" id="focus-desk" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="focus-list">Fokus ke meja</button>
-          <ul class="popover popover--menu focus-list" id="focus-list" role="listbox" aria-label="Pilih meja" tabindex="-1" hidden></ul>
+          <span class="focus-label" id="focus-label">Fokus ke meja</span>
+          <ul class="focus-chips" id="focus-chips" aria-labelledby="focus-label"></ul>
         </div>
         <section class="camera-card" id="camera" role="group" aria-label="Kamera">
           <div class="camera-head">
             <svg class="camera-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
             <span class="camera-title">KAMERA</span>
             <output id="camera-readout" aria-live="polite">0° · 100%</output>
+            <button class="camera-wallbtn" id="cam-walls-cycle" type="button" aria-label="Mode dinding: Potong. Ketuk untuk mengganti">Dinding: Potong</button>
             <button class="icon-btn icon-btn--sm" id="camera-min" type="button" aria-expanded="true" aria-controls="camera-body" aria-label="Minimalkan kamera"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           </div>
           <div id="camera-body">

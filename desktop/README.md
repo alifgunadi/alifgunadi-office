@@ -26,7 +26,7 @@ Double-click **Agent Office** on the Desktop. Remove the shortcuts with `desktop
 | Login | Opens the page with this user's token (`%LOCALAPPDATA%\AgentOffice\token`) in the address fragment; the page logs in and removes it. Only matters when the runner is switched on (see SECURITY.md). |
 | Hooks | Unchanged. Claude Code / Antigravity / OpenCode post to the server; the app is just a viewer. |
 | Close the window | The app exits; the server keeps running and still auto-stops 30 s after the last session. |
-| Restart / Stop buttons | Same as in the browser. After Stop, the window stays open with the original notice. |
+| Restart / Stop (gear menu) | Same as in the browser. After Stop, the window stays open with the original notice. |
 | Server down (auto-stop, crash) | The page shows `reconnecting...` and returns to `live` by itself. |
 | F5 while the server is down | No Chromium error page: a blank office background, then the office returns as soon as the server is up. |
 | Second launch | Focuses the open window (single instance). |

@@ -115,21 +115,23 @@ module.exports = [
     },
   },
   {
-    name: 'camera: in the stacked layout turning and wall modes are disabled with a reason, zoom still works, and the choice comes back in the wide layout',
+    name: 'camera: on a phone the floor plan turns too (the buttons work and the turn is kept), and the wall mode can be cycled',
     async run(page) {
       await click(page, 'cam-right');
-      await page.viewport(600, 700);
-      await page.waitFor(`layout.cols === 2`);
-      const r = JSON.parse(await val(page, `JSON.stringify({ dis: ['cam-left', 'cam-right'].map(i => document.getElementById(i).getAttribute('aria-disabled')), title: document.getElementById('cam-left').title, readout: document.getElementById('camera-readout').textContent, rot: layout.rot })`));
-      assert.deepEqual(r.dis, ['true', 'true']);
-      assert.match(r.title, /tampilan lebar/);
-      assert.equal(r.rot, 0, 'the stacked rooms are never turned');
-      assert.equal(r.readout, '0° · 100%');
-      await click(page, 'cam-right');
-      assert.equal(await val(page, `camera.rot`), 1, 'the saved turn is not touched by a disabled button');
-      await page.viewport(1440, 900);
+      await page.viewport(390, 844, { touch: true });
       await page.waitFor(`layout.cols === 0 && layout.rot === 1`);
-      assert.equal(await readout(page), '90° · 100%');
+      const r = JSON.parse(await val(page, `JSON.stringify({ dis: ['cam-left', 'cam-right'].map(i => document.getElementById(i).getAttribute('aria-disabled')), readout: document.getElementById('camera-readout').textContent, w: document.getElementById('cam-walls-cycle').textContent })`));
+      assert.deepEqual(r.dis, ['false', 'false']);
+      assert.equal(r.readout, '90° · 100%');
+      assert.equal(r.w, 'Dinding: Potong');
+      await val(page, `document.getElementById('cam-right').click(); true`);
+      await page.waitFor(`layout.rot === 2`);
+      await val(page, `document.getElementById('cam-walls-cycle').click(); true`);
+      await page.waitFor(`camera.walls === 'down'`);
+      assert.equal(await val(page, `document.getElementById('cam-walls-cycle').textContent`), 'Dinding: Turun');
+      await page.viewport(1440, 900, { touch: false });
+      await page.waitFor(`layout.cols === 0 && layout.rot === 2`);
+      assert.equal(await readout(page), '180° · 100%');
     },
   },
   {

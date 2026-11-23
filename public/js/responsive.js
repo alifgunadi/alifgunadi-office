@@ -14,6 +14,7 @@ const sheetBtn = document.getElementById('sheet-toggle');
 
 function setSheet(open, { focus = false } = {}) {
   sheetEl.classList.toggle('is-open', open);
+  if (typeof updateTaskPos === 'function') updateTaskPos();
   sheetBtn.setAttribute('aria-expanded', String(open));
   sheetBtn.setAttribute('aria-label', open ? 'Tutup panel tugas dan aktivitas' : 'Buka panel tugas dan aktivitas');
   if (focus) sheetBtn.focus();
@@ -31,7 +32,14 @@ let taskPosTimer = 0;
 
 function updateTaskPos() {
   const cards = [...taskListEl.querySelectorAll('.task-card')];
-  const show = mqTablet.matches && !mqPhone.matches && cards.length > 0;
+  // phone: under the first card of the closed sheet, a hint about the others; tablet: "n / total" while the cards scroll sideways
+  if (mqPhone.matches) {
+    const more = cards.length - 1, peek = !sheetEl.classList.contains('is-open');
+    taskPosEl.hidden = !(peek && more > 0);
+    if (!taskPosEl.hidden) setText(taskPosEl, 'Geser ke atas untuk melihat ' + more + ' task lain');
+    return;
+  }
+  const show = mqTablet.matches && cards.length > 0;
   taskPosEl.hidden = !show;
   if (!show) return;
   let best = 0, dist = Infinity;
@@ -56,9 +64,8 @@ document.addEventListener('mousedown', (e) => { if (legendEl.classList.contains(
 legendBtn.addEventListener('keydown', (e) => { if (e.key === 'Escape') setLegend(false); });
 onMq(mqPhone, () => setLegend(false));
 
-// ---- "Fokus ke meja": pick a desk from a list instead of tapping a small one (phone)
-const focusBtn = document.getElementById('focus-desk');
-const focusList = document.getElementById('focus-list');
+// ---- "Fokus ke meja": a row of desk chips instead of tapping a small desk (phone)
+const focusChips = document.getElementById('focus-chips');
 const canvasEl = document.getElementById('office');
 
 function focusDesk(id) {
@@ -72,9 +79,26 @@ function focusDesk(id) {
   stage.scrollTo({ left: Math.max(0, x - stage.clientWidth / 2), top: Math.max(0, y - stage.clientHeight / 2), behavior: reduced ? 'auto' : 'smooth' });
 }
 
-makeMenu(focusBtn, focusList, (list, pick) => {
-  desks.forEach((d, i) => menuOption(list, 'focus-opt-' + i, d.id === MAIN_ID ? 'AlifGunadi (meja sendiri)' : nameOf(d.id), { selected: false, onClick: () => pick(d.id) }));
-}, focusDesk);
+let focusSig = '';
+// One chip per desk, rebuilt when the set of desks changes (called from rebuildDesks in net.js). The chip of the main desk says it is his own.
+function syncFocusChips() {
+  const sig = desks.map((d) => d.id).join('|');
+  if (sig === focusSig) return;
+  focusSig = sig;
+  focusChips.textContent = '';
+  for (const d of desks) {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip focus-chip';
+    b.dataset.desk = d.id;
+    b.textContent = nameOf(d.id);
+    if (d.id === MAIN_ID) b.setAttribute('aria-label', nameOf(d.id) + ' (meja sendiri)');
+    b.addEventListener('click', () => focusDesk(d.id));
+    li.append(b);
+    focusChips.append(li);
+  }
+}
 
 // ---- reduced motion chosen on the page (on top of the system setting)
 const MOTION_OVERRIDE_NOTE = 'Gerak berkurang';
@@ -106,19 +130,64 @@ function menuItem(label, onClick, { checked, danger } = {}) {
   return b;
 }
 
+// Settings, Restart and Stop live in the gear menu only (below), so this menu has what the gear does not.
 function buildMenu() {
   menuList.textContent = '';
-  menuItem('Pengaturan', () => { closeMenu(false); openSettings(menuBtn); });
   menuItem('Folder & Runner', () => { closeMenu(false); setDockState('expanded'); document.getElementById('dock-folder').focus(); });
-  menuItem('Restart', () => { closeMenu(false); document.getElementById('btn-restart').click(); });
-  menuItem('Stop…', () => buildStopConfirm(), { danger: true });
   menuItem(MOTION_OVERRIDE_NOTE, () => { setUserReduce(!userReducesMotion()); buildMenu(); menuList.querySelector('[aria-checked]').focus(); }, { checked: userReducesMotion() });
   menuItem('Tentang', () => { closeMenu(false); aboutDlg.showModal(); });
 }
 
-// Stop asks first: it ends the office for every session until the next start.
-function buildStopConfirm() {
-  menuList.textContent = '';
+function openMenu() {
+  buildMenu();
+  menuList.hidden = false;
+  menuBtn.setAttribute('aria-expanded', 'true');
+  menuList.querySelector('.menu-item').focus();
+}
+
+menuBtn.addEventListener('click', () => (menuList.hidden ? openMenu() : closeMenu(true)));
+// Arrow keys, Home/End, Escape and Tab for a menu (the hamburger menu and the gear menu share it).
+function menuKeys(list, close) {
+  list.addEventListener('keydown', (e) => {
+    const items = [...list.querySelectorAll('button:not(:disabled)')];
+    const i = items.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i + items.length - 1) % items.length].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+    else if (e.key === 'Tab') close(false);
+  });
+}
+menuKeys(menuList, closeMenu);
+document.addEventListener('mousedown', (e) => { if (!menuList.hidden && !menuList.contains(e.target) && !menuBtn.contains(e.target)) closeMenu(false); });
+onMq(mqPhone, () => closeMenu(false));
+
+document.getElementById('about-close').addEventListener('click', () => aboutDlg.close());
+aboutDlg.addEventListener('close', () => { if (document.contains(menuBtn) && mqPhone.matches) menuBtn.focus(); });
+aboutDlg.addEventListener('mousedown', (e) => { if (e.target === aboutDlg) aboutDlg.close(); });
+
+// ---- gear menu (every width): Folder induk (the settings dialog), Restart and Stop. The actions themselves are in net.js and settings.js.
+const gearBtn = document.getElementById('btn-settings');
+const gearList = document.getElementById('gear-pop');
+const gearItems = [...gearList.children];
+
+function closeGear(focus) {
+  gearList.hidden = true;
+  gearList.replaceChildren(...gearItems); // back from the Stop question
+  gearBtn.setAttribute('aria-expanded', 'false');
+  if (focus) gearBtn.focus();
+}
+
+function openGear() {
+  gearList.hidden = false;
+  gearBtn.setAttribute('aria-expanded', 'true');
+  gearList.querySelector('button').focus();
+}
+
+// Phone: Stop asks first, because it ends the office for every session until the next start (called by the Stop item, see net.js).
+function askStop() {
+  if (gearList.hidden) { gearList.hidden = false; gearBtn.setAttribute('aria-expanded', 'true'); }
   const li = document.createElement('li');
   li.setAttribute('role', 'none');
   const box = document.createElement('div');
@@ -132,40 +201,25 @@ function buildStopConfirm() {
   cancel.type = 'button';
   cancel.className = 'btn btn--secondary';
   cancel.textContent = 'Batal';
-  cancel.addEventListener('click', () => { buildMenu(); menuList.querySelector('.menu-item').focus(); });
+  cancel.addEventListener('click', () => { gearList.replaceChildren(...gearItems); document.getElementById('btn-stop').focus(); });
   const ok = document.createElement('button');
   ok.type = 'button';
   ok.className = 'btn btn--danger';
   ok.textContent = 'Stop';
-  ok.addEventListener('click', () => { closeMenu(false); document.getElementById('btn-stop').click(); });
+  ok.addEventListener('click', () => { closeGear(false); stopServer(); });
   row.append(cancel, ok);
   box.append(text, row);
   li.append(box);
-  menuList.append(li);
+  gearList.replaceChildren(li);
   cancel.focus();
 }
 
-function openMenu() {
-  buildMenu();
-  menuList.hidden = false;
-  menuBtn.setAttribute('aria-expanded', 'true');
-  menuList.querySelector('.menu-item').focus();
-}
-
-menuBtn.addEventListener('click', () => (menuList.hidden ? openMenu() : closeMenu(true)));
-menuList.addEventListener('keydown', (e) => {
-  const items = [...menuList.querySelectorAll('button')];
-  const i = items.indexOf(document.activeElement);
-  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeMenu(true); }
-  else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i + items.length - 1) % items.length].focus(); }
-  else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
-  else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
-  else if (e.key === 'Tab') closeMenu(false);
+gearBtn.addEventListener('click', () => (gearList.hidden ? openGear() : closeGear(true)));
+document.getElementById('gear-folder').addEventListener('click', () => { closeGear(false); openSettings(gearBtn); });
+gearList.addEventListener('click', (e) => {
+  const b = e.target.closest ? e.target.closest('button') : null;
+  if (!b || b.closest('.confirm-row') || (b.id === 'btn-stop' && mqPhone.matches)) return; // the Stop question keeps the menu open
+  closeGear(false);
 });
-document.addEventListener('mousedown', (e) => { if (!menuList.hidden && !menuList.contains(e.target) && !menuBtn.contains(e.target)) closeMenu(false); });
-onMq(mqPhone, () => closeMenu(false));
-
-document.getElementById('about-close').addEventListener('click', () => aboutDlg.close());
-aboutDlg.addEventListener('close', () => { if (document.contains(menuBtn) && mqPhone.matches) menuBtn.focus(); });
-aboutDlg.addEventListener('mousedown', (e) => { if (e.target === aboutDlg) aboutDlg.close(); });
+menuKeys(gearList, closeGear);
+document.addEventListener('mousedown', (e) => { if (!gearList.hidden && !gearList.contains(e.target) && !gearBtn.contains(e.target)) closeGear(false); });

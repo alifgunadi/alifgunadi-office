@@ -79,6 +79,7 @@ function frontGaps(z) {
 }
 
 function drawFloorLabel(z) {
+  if (z.key === 'lounge') return; // the lounge carries no lettering on its floor (its legend chip stays)
   const T = z.glass ? T_GLASS : T_WALL;
   const ax = P.c * P.K, ay = P.s * P.K * P.tilt;
   const byv = P.c * P.K * P.tilt, bxv = -P.s * P.K * (1 - FLOOR_UPRIGHT);

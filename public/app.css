@@ -888,6 +888,7 @@ aside {
 .menu-wrap,
 .legend-toggle,
 .focus-wrap,
+.camera-wallbtn,
 .sheet-handle,
 .task-pos {
   display: none;
@@ -901,7 +902,8 @@ aside {
   gap: var(--space-3);
 }
 
-.menu-wrap {
+.menu-wrap,
+.gear-wrap {
   position: relative;
 }
 
@@ -933,7 +935,8 @@ aside {
 }
 
 .menu-item:hover { background: var(--color-wash); }
-.menu-item.is-danger { color: var(--color-danger-fg); }
+.menu-item.is-danger { color: var(--color-danger-fg); background: var(--color-danger-bg); }
+.menu-item:disabled { color: var(--color-disabled-fg); background: transparent; cursor: default; }
 .menu-item[aria-checked]::after { content: ""; width: 18px; height: 18px; border: 2px solid var(--color-control-border); border-radius: 4px; }
 .menu-item[aria-checked="true"]::after { background: var(--color-focus); border-color: var(--color-focus); }
 
@@ -957,9 +960,33 @@ aside {
     flex-direction: column;
   }
 
+  /* the dock sits under the stage instead of over it, and the stage keeps the rest */
+  .stage-wrap {
+    flex-direction: column;
+  }
+
+  .dock {
+    position: static;
+    flex: none;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .me-card {
+    display: none;
+  }
+
+  .toast {
+    top: calc(var(--space-3) + 52px + var(--space-2));
+    bottom: auto;
+  }
+
   aside {
     width: auto;
-    height: 308px;
+    height: 252px;
     flex: none;
     border-left: 0;
     border-top: 1px solid var(--color-line);
@@ -1028,11 +1055,38 @@ aside {
     display: none !important;
   }
 
+  /* [turn left] [turn right]  0° · 100% / Dinding: Potong  [zoom out] [zoom in] */
   #camera-body {
-    display: flex !important;
-    flex-direction: row;
+    display: contents !important;
+  }
+
+  .camera-card .camera-row:first-child { order: 1; }
+  .camera-card .camera-head { order: 2; flex-direction: column; align-items: flex-start; gap: 0; min-width: 104px; }
+  .camera-card .camera-row:nth-child(2) { order: 3; }
+
+  .camera-head output {
+    margin-left: 0;
+    min-width: 0;
+    text-align: left;
+    font-size: var(--fs-12);
+  }
+
+  .camera-wallbtn {
+    display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
+    min-height: var(--ctl-44);
+    margin: -13px 0 -11px;
+    padding: 0;
+    font: inherit;
+    font-size: var(--fs-12);
+    line-height: var(--lh-16);
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--color-muted);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-4);
+    cursor: pointer;
   }
 
   .camera-row {
@@ -1041,11 +1095,6 @@ aside {
 
   .camera-card .icon-btn {
     --size: var(--ctl-44);
-  }
-
-  .camera-head output {
-    min-width: 64px;
-    text-align: center;
   }
 
   .legend {
@@ -1070,18 +1119,17 @@ aside {
 }
 
 @media (max-width: 900px) {
+  :root {
+    --peek: 250px; /* how much of the bottom sheet shows when it is closed */
+  }
+
   .topbar {
     padding: var(--space-2) var(--space-4);
     flex-wrap: nowrap;
   }
 
-  .topbar .controls {
-    display: none;
-  }
-
   .menu-wrap {
     display: block;
-    margin-left: auto;
   }
 
   .topbar h1 {
@@ -1092,41 +1140,67 @@ aside {
   }
 
   main {
-    padding-bottom: 108px; /* the peek of the sheet */
+    padding-bottom: var(--peek); /* the peek of the sheet */
   }
 
-  .me-card,
-  .camera-card .camera-row:first-child,
-  #camera-readout {
-    display: none;
+  .stage {
+    padding: var(--space-2);
+    scrollbar-gutter: auto;
+    min-height: 160px;
   }
 
-  /* the camera bar keeps zoom only (the stacked rooms cannot turn); the desk chip sits next to it */
-  .camera-card {
-    right: var(--space-3);
+  /* the whole floor is smaller than the stage: it sits in the middle of it */
+  canvas {
+    margin: auto;
   }
 
+  /* below the stage: "Fokus ke meja" with a chip per desk, then the camera bar, then the dock */
   .focus-wrap {
-    display: block;
-    position: absolute;
-    top: calc(var(--space-3) + 52px + var(--space-2));
-    right: var(--space-3);
-    z-index: 5;
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3) var(--space-2);
+    background: var(--color-stage);
   }
 
-  .focus-btn {
-    --btn-h: var(--ctl-44);
+  .focus-label {
+    font-size: var(--fs-11);
+    line-height: var(--lh-14);
+    font-weight: 800;
+  }
+
+  .focus-chips {
+    display: flex;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .focus-chips::-webkit-scrollbar { display: none; }
+
+  .focus-chip {
+    flex: none;
+    min-height: var(--ctl-44);
+    padding: 0 var(--space-4);
+    white-space: nowrap;
+  }
+
+  .camera-card {
+    position: static;
+    flex: none;
+    width: auto;
+    margin: 0 var(--space-3) var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    justify-content: space-between;
     box-shadow: var(--shadow-card);
   }
 
-  .focus-list {
-    right: 0;
-    left: auto;
-    bottom: auto;
-    top: calc(100% + var(--space-1));
-    max-height: 50vh;
-    overflow-y: auto;
-  }
+  .camera-card .camera-row:nth-child(2) { margin-left: auto; }
+  .camera-card .camera-head { flex: 1; }
 
   /* the zone legend folds into one chip */
   .legend-toggle {
@@ -1158,18 +1232,43 @@ aside {
   }
 
   .dock {
-    left: var(--space-3);
-    right: var(--space-3);
-    bottom: var(--space-3);
+    margin: 0 var(--space-3) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-16);
+    box-shadow: var(--shadow-card);
   }
 
+  /* target chip, field and send on the first line; Folder and Runner on the second */
   .dock-row {
     flex-wrap: wrap;
   }
 
+  .dock-chips {
+    flex: none;
+    max-width: 100%;
+    order: 1;
+  }
+
   .dock-field {
-    flex-basis: 100%;
-    order: -1;
+    flex: 1 1 120px;
+    min-width: 0;
+    order: 2;
+  }
+
+  .dock-send {
+    flex: none;
+    min-width: 72px;
+    order: 3;
+  }
+
+  .dock-pick {
+    flex: 1 1 40%;
+    order: 4;
+  }
+
+  .dock-pick .dock-select {
+    width: 100%;
+    max-width: none;
   }
 
   .dock-at {
@@ -1178,6 +1277,7 @@ aside {
 
   .dock-field textarea {
     min-height: var(--ctl-44);
+    scrollbar-width: none;
   }
 
   .target-chip {
@@ -1187,10 +1287,6 @@ aside {
   .target-chip button {
     width: var(--ctl-44);
     height: var(--ctl-44);
-  }
-
-  .dock-send {
-    flex: 1;
   }
 
   /* the side panel is a sheet over the bottom of the screen: a peek with the grabber and the tabs, opened to most of the height */
@@ -1205,7 +1301,7 @@ aside {
     border-top: 1px solid var(--color-line);
     border-radius: var(--radius-16) var(--radius-16) 0 0;
     box-shadow: var(--shadow-float);
-    transform: translateY(calc(100% - 108px));
+    transform: translateY(calc(100% - var(--peek)));
     transition: transform .2s ease;
   }
 
@@ -1213,8 +1309,27 @@ aside {
     transform: translateY(0);
   }
 
-  aside:not(.is-open) .side-body > :not(.tabs) {
-    visibility: hidden;
+  /* the peek shows the tabs, the first task card and a hint about the others */
+  aside:not(.is-open) .filters {
+    display: none;
+  }
+
+  aside:not(.is-open) .task-list {
+    overflow: hidden;
+    flex: none;
+    max-height: 132px;
+  }
+
+  aside:not(.is-open) .empty {
+    margin: var(--space-3) var(--space-2);
+  }
+
+  .task-pos {
+    display: block;
+    margin: var(--space-2) var(--space-1) 0;
+    font-size: var(--fs-12);
+    line-height: var(--lh-16);
+    color: var(--color-muted);
   }
 
   .sheet-handle {
@@ -1246,9 +1361,6 @@ aside {
     flex: none;
   }
 
-  .task-pos {
-    display: none;
-  }
 }
 
 html.reduce-motion *,

@@ -14,10 +14,9 @@ const GX_OFF = 24;                       // stacked layouts: walking gutter offs
 const WALK_SPEED = 140, MAX_TRIP_S = 3.5, STRIDE = 0.09;
 const IDLE_TO_LOUNGE_MIN = 10;           // minutes an agent must stay idle before it leaves its desk for the lounge
 const LEAVE_GRACE_MS = IDLE_TO_LOUNGE_MIN * 60 * 1000, STAGGER_STEP = 150, STAGGER_MAX = 1500;
-// Layout mode by the width of the stage: the wide isometric floorplan from WIDE_MIN_W up (scaled down to fit, never below 0.5),
-// then stacked rooms with 3 or 2 desk columns. The Penpot design shows the isometric view on a 1440px screen, where the stage
-// is about 1070px wide, so the old 1100 threshold (which showed stacked rooms there) was lowered.
-const WIDE_MIN_W = 880, STACK3_MIN_W = 700;
+// The isometric floor plan is used at every width: it is scaled down to fit the stage (a phone shows the whole floor, never below MIN_FIT).
+// The stacked layouts (buildLayout with cols > 0) are no longer chosen by the page; they are kept for the tests of the geometry.
+const MIN_FIT = 0.12;
 const MAX_CANVAS_PIXELS = 16e6;          // backing store limit: at 130% zoom and a high-dpi screen the canvas would otherwise be huge
 const TOP_PAD = 56;                      // css px above the floor for bubbles
 const LBL = 46;                          // floor strip at the front of each room reserved for the room name

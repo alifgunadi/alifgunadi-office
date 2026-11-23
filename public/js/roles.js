@@ -2,7 +2,7 @@
 
 // g: 'f' | 'm'. hs: hairstyle (women: long wavy bob pony bun; men: side quiff undercut wave). outfit: tie polo blazer blouse dress.
 const ROLES = {
-  'main': { label: 'AlifGunadi', color: '#e5e7eb', hair: '#3f2a1d', skin: '#ffe3cc', g: 'm', hs: 'side', outfit: 'blazer', glasses: true },
+  'main': { label: 'Alif Gunadi', color: '#e5e7eb', hair: '#3f2a1d', skin: '#ffe3cc', g: 'm', hs: 'side', outfit: 'blazer', glasses: true },
   'product-manager': { label: 'Product Manager', color: '#f59e0b', hair: '#111827', skin: '#e0ac69', g: 'f', hs: 'wavy', outfit: 'blouse' },
   'lead-business-analyst': { label: 'Business Analyst', color: '#14b8a6', hair: '#7c2d12', skin: '#ffdbac', g: 'm', hs: 'side', outfit: 'tie', glasses: true },
   'lead-solution-engineer': { label: 'Solution Eng', color: '#6366f1', hair: '#1f2937', skin: '#c68642', g: 'm', hs: 'quiff', outfit: 'polo', stubble: true },
@@ -32,7 +32,7 @@ for (const [zone, ids] of Object.entries(ZONE_IDS)) for (const id of ids) ZONE_O
 // Rooms: floor colour, accent colour (legend, minimap, stacked walls) and the outline of the floor plan. Doors are placed by buildLayout
 // (layout.js): the wide floor plan puts them in the walls between rooms, the stacked layouts use a side gutter.
 const ZONES = {
-  trainer: { label: 'AlifGunadi Office', floor: '#f6e7c8', stroke: '#e2cfa3', wall: '#d9a441', glass: true },
+  trainer: { label: 'CEO Office', floor: '#f6e7c8', stroke: '#e2cfa3', wall: '#d9a441', glass: true },
   product: { label: 'Product', floor: '#dce8fb', stroke: '#b9ccee', wall: '#6b9bd6' },
   eng: { label: 'Engineering', floor: '#ddf1e4', stroke: '#b4dbc2', wall: '#6cb58a' },
   qa: { label: 'Quality & Security', floor: '#f7dde0', stroke: '#e5b8be', wall: '#e0848f', glass: true },
