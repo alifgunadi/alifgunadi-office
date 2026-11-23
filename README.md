@@ -171,6 +171,10 @@ the office's own code; read [SECURITY.md](SECURITY.md) first, and keep the defau
 
 Links to Jira, Figma and Penpot in a prompt can be read by the server as read-only context (set the tokens, see [SECURITY.md](SECURITY.md)); they show as chips under the input and in the Konteks tab.
 
+**Trusting a folder.** In real mode the office asks "Percayai folder ini?" when you choose a folder in the dock and again at the first send to a
+folder you have not trusted yet. The dialog says what a run may do (read-only `plan`, or that it can change files). The answer lasts for that page only:
+reload the page or log in again and it asks again. It is a confirmation for you at the screen, not a lock on the server.
+
 The task list is kept across restarts (tasks that were open come back as "Terputus"; nothing is run again).
 
 The dock then lists those folders and runners, tasks come from the server, and a card can show the program's output and cancel it.

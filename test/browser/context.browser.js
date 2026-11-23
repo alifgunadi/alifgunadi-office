@@ -10,10 +10,10 @@ const JIRA = 'https://acme.atlassian.net/browse/ABC-1';
 const stub = (page, source) => val(page, `(() => {
   window.__realApi = window.__realApi || api; window.__realLeave = window.__realLeave || leaveRealMode; leaveRealMode = () => {}; /* the page's own stream is not logged in */ window.__calls = [];
   session.authed = true; session.real = true; session.workspaces = [{ id: 'w', label: 'w' }]; session.runners = [{ id: 'claude', ok: true, why: '' }];
-  dock.folder = 'w'; dock.runner = 'claude';
+  dock.folder = 'w'; dock.runner = 'claude'; trustedFolders.add('w'); /* these cases are about links, not about trusting the folder */
   api = async (m, u, b) => { __calls.push([m, u, b]); return (${source})(m, u, b); };
   onContextMode(); return true; })()`);
-const unstub = (page) => val(page, `(() => { if (window.__realApi) api = window.__realApi; if (window.__realLeave) leaveRealMode = window.__realLeave; session.authed = false; session.real = false; session.workspaces = []; session.runners = []; dock.folder = FOLDERS[0]; dock.runner = 'claude'; document.getElementById('dock-folder-name').textContent = dock.folder; document.getElementById('dock-runner-name').textContent = dock.runner; onContextMode(); dockInput.value = ''; renderContext(); return true; })()`);
+const unstub = (page) => val(page, `(() => { trustedFolders.clear(); if (window.__realApi) api = window.__realApi; if (window.__realLeave) leaveRealMode = window.__realLeave; session.authed = false; session.real = false; session.workspaces = []; session.runners = []; dock.folder = FOLDERS[0]; dock.runner = 'claude'; document.getElementById('dock-folder-name').textContent = dock.folder; document.getElementById('dock-runner-name').textContent = dock.runner; onContextMode(); dockInput.value = ''; renderContext(); return true; })()`);
 const setText = async (page, text) => {
   await val(page, `dockInput.focus(); dockInput.value = ${JSON.stringify(text)}; dockInput.dispatchEvent(new Event('input', { bubbles: true })); true`);
 };

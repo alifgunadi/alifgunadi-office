@@ -151,6 +151,22 @@
       </div>
     </aside>
   </div>
+  <dialog id="trust-dialog" class="dialog" aria-labelledby="trust-title" aria-describedby="trust-lead trust-folder">
+    <form method="dialog" class="dialog-form" id="trust-form">
+      <header class="dialog-head">
+        <h2 id="trust-title">Percayai folder ini?</h2>
+      </header>
+      <div class="dialog-body">
+        <p class="dialog-lead"><strong id="trust-folder"></strong></p>
+        <p class="dialog-lead" id="trust-lead"></p>
+      </div>
+      <footer class="dialog-foot">
+        <span class="dialog-spacer"></span>
+        <button class="btn btn--secondary" id="trust-cancel" type="button">Batal</button>
+        <button class="btn btn--primary" id="trust-confirm" type="button">Percayai</button>
+      </footer>
+    </form>
+  </dialog>
   <dialog id="about-dialog" class="dialog" aria-labelledby="about-title">
     <form method="dialog" class="dialog-form" id="about-form">
       <header class="dialog-head">

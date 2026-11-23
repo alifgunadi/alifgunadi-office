@@ -18,6 +18,7 @@ const { launch } = require('./harness');
         const before = page.problems.length;
         try {
           await page.viewport(1440, 900); // every case starts from the same window and the default camera
+          await page.evaluate("document.querySelectorAll('dialog[open]').forEach((d) => d.close()); true"); // a case that failed halfway must not leave a modal dialog over the next ones
           await page.evaluate("try { localStorage.removeItem('alifgunadi-office.dock'); } catch (e) {} true");
           await page.evaluate("typeof resetCamera === 'function' && (resetCamera(), setMinimized(false), (() => { const a = mainAgent(); if (a) { a.man = null; a.s = 0; a.chair = 0; } toastEl.hidden = true; hover = null; flash = null; })(), true)");
           await page.evaluate("typeof taskStore !== 'undefined' && (taskStore.tasks.length = 0, taskStore.nextId = 1, dockInput.value = '', dock.chips = [], dock.answerTask = null, dock.error = '', dock.success = '', dock.sending = false, closeMention(), dockConfirm.hidden = true, document.getElementById('folder-list').hidden = true, document.getElementById('runner-list').hidden = true, setDockState('compact'), renderChips(), onConnectionChange(true), taskFilter = 'all', confirmingCancel = null, selectTab(tabButtons[1], false), tasksChanged(), true)");

@@ -147,6 +147,21 @@ describe('limits', () => {
   });
 });
 
+describe('what the session says about the runner', () => {
+  it('names the permission mode a run has (plan unless the server sets another, valid one), so the page can say what a trusted folder allows', async () => {
+    assert.equal(json(await srv.request('GET', '/session', { headers: asUser() })).permission, 'plan');
+    const edit = await startServer({ ALIFGUNADI_OFFICE_RUNNER_PERMISSION: 'acceptEdits' });
+    const bad = await startServer({ ALIFGUNADI_OFFICE_RUNNER_PERMISSION: 'bypassPermissions' });
+    try {
+      assert.equal(json(await edit.request('GET', '/session', { headers: { ...GUARD, Cookie: await login(edit) } })).permission, 'acceptEdits');
+      assert.equal(json(await bad.request('GET', '/session', { headers: { ...GUARD, Cookie: await login(bad) } })).permission, 'plan', 'a mode that is never offered falls back to plan');
+    } finally {
+      await edit.stop();
+      await bad.stop();
+    }
+  });
+});
+
 describe('what is never offered', () => {
   it('this checkout is not a workspace even when it sits inside the chosen parent folder', async () => {
     const parent = path.dirname(path.join(__dirname, '..'));

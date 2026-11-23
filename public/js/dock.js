@@ -107,6 +107,38 @@ function effectiveTargets() {
   return { ids: [DEFAULT_DESK], resolved, byDefault: true };
 }
 
+// ---- trusting a folder: before an agent works in a folder, the person confirms it. It is asked when the folder is chosen in the menu and
+// again at the first send to a folder that is not trusted yet. The answer is kept for this page only (a reload or a new login asks again).
+// Real mode only: the simulation runs nothing. This is a confirmation for the person at the screen, not a lock: the login is what protects the server.
+const trustedFolders = new Set();
+const trustDlg = document.getElementById('trust-dialog');
+let trustPending = null; // { folder, then, ok }
+
+const folderNeedsTrust = () => realMode() && !!dock.folder && !trustedFolders.has(dock.folder);
+
+function askTrust(folder, then) {
+  if (trustDlg.open) return;
+  const mode = session.permission || 'plan';
+  document.getElementById('trust-folder').textContent = folder;
+  document.getElementById('trust-lead').textContent = mode === 'plan'
+    ? 'Agent akan menjalankan Claude di folder ini dan bisa membaca semua isinya. Mode saat ini hanya-baca (plan): tidak ada file yang diubah.'
+    : 'Agent akan menjalankan Claude di folder ini, membaca semua isinya dan MENGUBAH file di dalamnya (mode ' + mode + ').';
+  trustPending = { folder, then, ok: false };
+  trustDlg.showModal();
+  document.getElementById('trust-cancel').focus(); // the safe answer has the focus: trusting takes a deliberate press
+}
+
+document.getElementById('trust-cancel').addEventListener('click', () => trustDlg.close());
+document.getElementById('trust-confirm').addEventListener('click', () => { if (trustPending) trustPending.ok = true; trustDlg.close(); });
+trustDlg.addEventListener('close', () => { // also Escape
+  const p = trustPending;
+  trustPending = null;
+  if (p && p.ok) trustedFolders.add(p.folder);
+  refreshHint();
+  if (p && p.ok && p.then) p.then();
+  else if (p) { dockInput.focus(); requestAnimationFrame(() => dockInput.focus()); } // the Folder button hides again when the dock folds, so the focus goes to the field
+});
+
 // ---- the line under the input: an error, the connection, a success, or what will happen
 
 function refreshHint() {
@@ -119,6 +151,7 @@ function refreshHint() {
     const { ids, resolved, byDefault } = effectiveTargets();
     text = byDefault ? 'Tanpa @mention: dikerjakan oleh ' + nameOf(DEFAULT_DESK) + ' (default)' : OfficeMentions.describe(ids, resolved, nameOf);
     if (resolved.unknown.length) text += (text ? ' · ' : '') + '@' + resolved.unknown.join(', @') + ' tidak dikenal (dikirim sebagai teks biasa)';
+    if (folderNeedsTrust()) text += (text ? ' · ' : '') + 'folder ' + dock.folder + ' belum dipercaya';
     kind = 'preview';
   }
   dockHint.textContent = text;
@@ -288,6 +321,7 @@ async function sendReal(text, ids, resolved) {
     }
   } else if (r.status === 401) {
     leaveRealMode();
+    trustedFolders.clear();
     setError('Sesi berakhir. Buka kantor lagi lewat start-office.ps1 atau aplikasi desktop.');
   } else if (r.status === 0) {
     setError('Server tidak terjangkau. Tugas belum dikirim.');
@@ -303,6 +337,7 @@ function trySend(confirmed) {
   const text = dockInput.value.trim();
   if (!text) return setError('Tulis instruksi terlebih dahulu sebelum mengirim.');
   const { ids, resolved } = effectiveTargets(); // no target at all means Alif Gunadi, so there is no "pick a target" error any more
+  if (folderNeedsTrust()) return askTrust(dock.folder, () => trySend(confirmed)); // the first send to a folder asks first
   if (resolved.everyone && !confirmed) return showConfirm(ids.length);
   dockConfirm.hidden = true;
   dock.sending = true;
@@ -406,7 +441,7 @@ const rebuildFolderMenu = makeMenu(folderBtn, document.getElementById('folder-li
   menuOption(list, 'folder-opt-settings', 'Ubah folder induk…', {
     onClick: () => { list.hidden = true; folderBtn.setAttribute('aria-expanded', 'false'); openSettings(folderBtn); },
   });
-}, (f) => { dock.folder = f; document.getElementById('dock-folder-name').textContent = f; saveDockPrefs(); });
+}, (f) => { dock.folder = f; document.getElementById('dock-folder-name').textContent = f; saveDockPrefs(); if (folderNeedsTrust()) askTrust(f); });
 
 makeMenu(runnerBtn, document.getElementById('runner-list'), (list, pick) => {
   runnerList().forEach((r, i) => menuOption(list, 'runner-opt-' + i, r.id, { selected: r.id === dock.runner, disabled: !r.ok, why: r.ok ? '' : 'tidak tersedia · ' + r.why, onClick: () => pick(r.id) }));

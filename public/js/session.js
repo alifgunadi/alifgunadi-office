@@ -47,7 +47,7 @@ async function initSession() {
   }
   const s = await api('GET', '/session');
   if (s.status === 200 && s.data && s.data.authed) {
-    Object.assign(session, { authed: true, real: !!s.data.real, runners: s.data.runners || [], workspaces: s.data.workspaces || [], maxConcurrent: s.data.maxConcurrent || 3 });
+    Object.assign(session, { authed: true, real: !!s.data.real, permission: s.data.permission || 'plan', runners: s.data.runners || [], workspaces: s.data.workspaces || [], maxConcurrent: s.data.maxConcurrent || 3 });
     if (realMode()) enterRealMode();
   }
   if (loggedIn) reconnectStream(); // the stream that was open before the login carries no tasks

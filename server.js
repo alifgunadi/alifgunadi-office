@@ -17,7 +17,7 @@ const { loadOrCreateToken, createAuth } = require('./lib/auth');
 const { createWorkspaces } = require('./lib/workspaces');
 const { createSettings } = require('./lib/settings');
 const { createIntegrations, contextText } = require('./lib/integrations');
-const { buildRunners, runnersView, createExecutor, MAX_CONCURRENT } = require('./lib/runner');
+const { buildRunners, runnersView, createExecutor, MAX_CONCURRENT, PERMISSION_MODES } = require('./lib/runner');
 const { resolveNetwork } = require('./lib/network');
 const Tasks = require('./public/js/tasks');
 const Mentions = require('./public/js/mentions');
@@ -88,8 +88,11 @@ function takeCheckQuota() {
   return true;
 }
 
+// What a claude run may do (the same rule lib/runner.js applies): shown in the dialog that asks to trust a folder.
+const permissionMode = () => (PERMISSION_MODES.includes(process.env.ALIFGUNADI_OFFICE_RUNNER_PERMISSION) ? process.env.ALIFGUNADI_OFFICE_RUNNER_PERMISSION : 'plan');
+
 function sessionView() {
-  return { app: 'alifgunadi-office', schema: 1, authed: true, real: realEnabled(), runners: runnersView(runners), workspaces: workspaces.list(), integrations: integrations.providers(), maxConcurrent: MAX_CONCURRENT };
+  return { app: 'alifgunadi-office', schema: 1, authed: true, real: realEnabled(), permission: permissionMode(), runners: runnersView(runners), workspaces: workspaces.list(), integrations: integrations.providers(), maxConcurrent: MAX_CONCURRENT };
 }
 
 function cancelShutdown() {

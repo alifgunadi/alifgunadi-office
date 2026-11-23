@@ -6,11 +6,14 @@
 const assert = require('node:assert/strict');
 
 const val = (page, expr) => page.evaluate(expr);
-const send = async (page, text) => {
+// The first send to a folder in a page asks to trust it (dialog); the cases that are not about that answer "Percayai" at once.
+const trustIfAsked = (page) => val(page, `(() => { if (document.getElementById('trust-dialog').open) document.getElementById('trust-confirm').click(); return true; })()`);
+const send = async (page, text, { trust = true } = {}) => {
   await val(page, `document.body.focus(); dockInput.focus(); true`);
   await page.sleep(50);
   await page.type(text);
   await page.key('Enter', { modifiers: 2 });
+  if (trust) await trustIfAsked(page);
   await page.waitFor(`!dock.sending && (dock.success !== '' || dock.error !== '')`, 6000);
 };
 const showTasks = (page) => val(page, `document.getElementById('tab-tasks').click(); true`);
@@ -68,6 +71,59 @@ module.exports = [
       await send(page, 'echo via chip');
       await page.waitFor(`taskStore.tasks.some((t) => t.deskId === 'lead-ui' && t.status === 'done')`, 8000);
       assert.equal(await val(page, `taskStore.tasks.filter((t) => t.deskId === 'lead-ui')[0].text`), '@lead-ui echo via chip');
+    },
+  },
+  {
+    name: 'real mode: a folder is trusted before an agent works in it: Kirim asks, Batal sends nothing, Percayai sends, and the same folder is not asked again',
+    async run(page) {
+      await page.open(page.origin + '/#token=' + page.token()); // a new page: nothing is trusted yet
+      await page.waitFor(`realMode()`);
+      await val(page, `dock.success = ''; dock.error = ''; true`);
+      const dlg = () => val(page, `document.getElementById('trust-dialog').open`);
+      const before = await val(page, `taskStore.tasks.length`);
+      await val(page, `document.body.focus(); dockInput.focus(); true`);
+      await page.type('@lead-qa echo uji percaya');
+      assert.match(await val(page, `document.getElementById('dock-hint').textContent`), /folder w belum dipercaya/);
+      await page.key('Enter', { modifiers: 2 });
+      assert.equal(await dlg(), true, 'the first send to the folder asks');
+      assert.equal(await val(page, `document.getElementById('trust-folder').textContent`), 'w');
+      assert.match(await val(page, `document.getElementById('trust-lead').textContent`), /hanya-baca [(]plan[)]/, 'it says what the agent may do');
+      assert.equal(await val(page, `document.activeElement.id`), 'trust-cancel', 'the safe answer has the focus');
+      await val(page, `document.getElementById('trust-cancel').click(); true`);
+      assert.equal(await dlg(), false);
+      await page.sleep(300);
+      assert.equal(await val(page, `taskStore.tasks.length`), before, 'Batal sends nothing');
+      assert.equal(await val(page, `dockInput.value`), '@lead-qa echo uji percaya', 'and keeps the draft');
+      await page.key('Enter', { modifiers: 2 });
+      assert.equal(await dlg(), true, 'it asks again at the next send');
+      await val(page, `document.getElementById('trust-confirm').click(); true`);
+      await page.waitFor(`dock.success !== '' && !dock.sending`, 6000);
+      assert.equal(await val(page, `dock.error`), '');
+      await page.waitFor(`taskStore.tasks.length === ${before + 1}`, 6000);
+      await send(page, '@lead-qa echo tidak ditanya lagi', { trust: false }); // would hang on an unanswered dialog
+      assert.equal(await dlg(), false, 'the same folder is not asked again in this page');
+    },
+  },
+  {
+    name: 'real mode: choosing a folder in the menu asks to trust it, and Escape leaves it untrusted',
+    async run(page) {
+      await page.open(page.origin + '/#token=' + page.token());
+      await page.waitFor(`realMode()`);
+      await val(page, `document.getElementById('dock-folder').click(); true`);
+      await page.waitFor(`!!document.getElementById('folder-opt-0')`);
+      await val(page, `document.getElementById('folder-opt-0').click(); true`);
+      await page.waitFor(`document.getElementById('trust-dialog').open`);
+      await page.key('Escape');
+      await page.waitFor(`!document.getElementById('trust-dialog').open`);
+      assert.equal(await val(page, `trustedFolders.has('w')`), false, 'Escape is "no"');
+      await page.waitFor(`document.activeElement.id === 'dock-input'`, 3000); // the focus goes back to the field
+      await val(page, `document.getElementById('dock-folder').click(); true`);
+      await page.waitFor(`!!document.getElementById('folder-opt-0')`);
+      await val(page, `document.getElementById('folder-opt-0').click(); true`);
+      await page.waitFor(`document.getElementById('trust-dialog').open`);
+      await val(page, `document.getElementById('trust-confirm').click(); true`);
+      await page.waitFor(`trustedFolders.has('w')`);
+      assert.match(await val(page, `document.getElementById('dock-hint').textContent`), /^(?!.*belum dipercaya)/, 'the hint no longer says "not trusted"');
     },
   },
   {
