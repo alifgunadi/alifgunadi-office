@@ -3,3 +3,41 @@ project/
 .claude/
 .agents/
 node_modules/
+
+# Secrets and local configuration - the office token, API keys and settings stay on the machine
+.env
+.env.*
+*.pem
+*.key
+*.token
+settings.local.json
+
+# Logs, backups and leftovers (install.js writes *.bak-<timestamp>, taskfile.js sets a bad file aside as .bad)
+*.log
+*.log.*
+*.bak
+*.bak-*
+*.bad
+*.tmp
+*.stopped
+
+# Release packaging (the release workflow builds these in CI)
+/stage/
+/pkg/
+*.zip
+*.sha256
+
+# Test and tool output
+coverage/
+.nyc_output/
+test-results/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
