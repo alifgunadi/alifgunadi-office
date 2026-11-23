@@ -1120,9 +1120,12 @@ aside {
 
 @media (max-width: 900px) {
   :root {
-    --peek: 250px; /* how much of the bottom sheet shows when it is closed */
+    /* how much of the bottom sheet shows when it is closed: the grabber and the tabs, nothing else (the count is on the Tasks tab) */
+    --peek-base: 108px;
+    /* extra room kept clear at the bottom for a browser toolbar that floats over the page (iPhone Safari); set by responsive.js */
+    --bar-clear: 0px;
+    --peek: calc(var(--peek-base) + var(--bar-clear));
   }
-
   .topbar {
     padding: var(--space-2) var(--space-4);
     flex-wrap: nowrap;
@@ -1296,8 +1299,9 @@ aside {
     right: 0;
     bottom: 0;
     z-index: 30;
-    height: min(62dvh, 560px);
+    height: min(50dvh, 440px); /* half the screen at most: the floor, the camera bar and the dock stay in sight */
     padding-top: 0;
+    padding-bottom: var(--bar-clear);
     border-top: 1px solid var(--color-line);
     border-radius: var(--radius-16) var(--radius-16) 0 0;
     box-shadow: var(--shadow-float);
@@ -1307,6 +1311,17 @@ aside {
 
   aside.is-open {
     transform: translateY(0);
+  }
+
+  /* the sheet follows the finger while it is dragged (responsive.js), so it must not animate behind it */
+  aside.is-dragging {
+    transition: none;
+  }
+
+  /* the two places that start a drag: no browser scrolling or pull-to-refresh from them */
+  .sheet-handle,
+  aside .tabs {
+    touch-action: none;
   }
 
   /* the peek shows the tabs, the first task card and a hint about the others */

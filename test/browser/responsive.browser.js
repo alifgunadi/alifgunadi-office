@@ -76,14 +76,15 @@ module.exports = [
         await phone(page);
         await page.waitFor(`layout.cols === 0`);
         const peek = await rect(page, 'aside');
-        assert.ok(peek.t >= 800 - 251 && peek.t <= 800 - 249, 'a peek of about 250px (grabber, tabs, the first card and a hint) ' + JSON.stringify(peek));
+        assert.ok(peek.t >= 800 - 109 && peek.t <= 800 - 107, 'a peek of 108px: the grabber and the tabs, nothing else ' + JSON.stringify(peek));
         assert.equal(await val(page, `document.getElementById('sheet-toggle').getAttribute('aria-expanded')`), 'false');
-        // closed: the filters are not shown, only the tabs, the first card and a hint
+        // closed: the filters are not shown, only the grabber and the tabs
         assert.equal(await val(page, `getComputedStyle(document.querySelector('.filters')).display`), 'none');
         await val(page, `document.getElementById('sheet-toggle').click(); true`);
         await page.sleep(400);
         const open = await rect(page, 'aside');
         assert.ok(open.h > 300 && open.t < 800 - 300, 'opened ' + JSON.stringify(open));
+        assert.ok(open.h <= 800 * 0.5 + 1, 'the open sheet is at most half the screen, so the floor stays in sight ' + JSON.stringify(open));
         assert.equal(await val(page, `getComputedStyle(document.querySelector('.filters')).display`), 'flex');
         await val(page, `document.getElementById('tab-tasks').focus(); true`);
         await page.key('Escape');
@@ -94,6 +95,132 @@ module.exports = [
         await page.viewport(1440, 900, { touch: false });
         await page.waitFor(`!document.getElementById('side-panel').classList.contains('is-open')`);
       } finally { await back(page); }
+    },
+  },
+  {
+    name: 'responsive: phone sheet follows a swipe on the grabber or the tabs (up opens, down closes), a slow short drag snaps back, a tap still toggles',
+    async run(page) {
+      const isOpen = (page) => val(page, `document.getElementById('side-panel').classList.contains('is-open')`);
+      const centre = async (sel) => { const r = await rect(page, sel); return { x: Math.round((r.l + r.r) / 2), y: Math.round((r.t + r.b) / 2) }; };
+      const settled = async () => {
+        await page.sleep(400);
+        const s = await val(page, `({ transform: document.getElementById('side-panel').style.transform, dragging: document.getElementById('side-panel').classList.contains('is-dragging') })`);
+        assert.deepEqual(s, { transform: '', dragging: false }, 'no leftover drag state ' + JSON.stringify(s));
+      };
+      try {
+        await phone(page);
+        await page.waitFor(`layout.cols === 0`);
+        assert.equal(await isOpen(page), false);
+
+        // swipe up on the grabber opens it
+        let g = await centre('#sheet-toggle');
+        await page.swipe(g.x, g.y, g.y - 220);
+        await page.waitFor(`document.getElementById('side-panel').classList.contains('is-open')`);
+        await settled();
+        assert.equal(await val(page, `document.getElementById('sheet-toggle').getAttribute('aria-expanded')`), 'true');
+        const open = await rect(page, 'aside');
+        assert.ok(open.h > 300 && open.t < 800 - 300, 'opened ' + JSON.stringify(open));
+
+        // swipe down on the tab bar closes it (the tab under the finger is not activated by the drag)
+        const tabBefore = await val(page, `document.querySelector('.tab[aria-selected="true"]').id`);
+        let t = await centre('#tab-activity');
+        await page.swipe(t.x, t.y, t.y + 260);
+        await page.waitFor(`!document.getElementById('side-panel').classList.contains('is-open')`);
+        await settled();
+        assert.equal(await val(page, `document.getElementById('sheet-toggle').getAttribute('aria-expanded')`), 'false');
+        const closed = await rect(page, 'aside');
+        assert.ok(closed.t >= 800 - 109 && closed.t <= 800 - 107, 'back at the peek ' + JSON.stringify(closed));
+        assert.equal(await val(page, `document.querySelector('.tab[aria-selected="true"]').id`), tabBefore, 'a drag is not a tap on the tab');
+
+        // a short, slow drag does not reach the middle: it snaps back, and the click that ends it does not open the sheet
+        g = await centre('#sheet-toggle');
+        await page.swipe(g.x, g.y, g.y - 40, { steps: 5, stepMs: 120 });
+        await page.sleep(500);
+        assert.equal(await isOpen(page), false, 'snapped back to closed');
+        await settled();
+
+        // a quick flick, even a short one, goes the way it was thrown
+        await page.swipe(g.x, g.y, g.y - 60, { steps: 3, stepMs: 8 });
+        await page.waitFor(`document.getElementById('side-panel').classList.contains('is-open')`);
+        await settled();
+
+        // taps keep working: the grabber closes it, then opens it again
+        g = await centre('#sheet-toggle');
+        await page.tap(g.x, g.y);
+        await page.waitFor(`!document.getElementById('side-panel').classList.contains('is-open')`);
+        await page.sleep(300);
+        g = await centre('#sheet-toggle');
+        await page.tap(g.x, g.y);
+        await page.waitFor(`document.getElementById('side-panel').classList.contains('is-open')`);
+      } finally { await back(page); }
+    },
+  },
+  {
+    name: 'responsive: an empty Activity panel says so instead of staying blank, and the message goes as soon as there is an entry',
+    async run(page) {
+      const empty = () => val(page, `document.getElementById('activity-empty').hidden`);
+      try {
+        await phone(page);
+        await val(page, `renderLog([]); true`);
+        assert.equal(await empty(), false, 'no entries: the message shows');
+        assert.match(await val(page, `document.getElementById('activity-empty').textContent`), /^Belum ada aktivitas/);
+        await val(page, `renderLog([{ t: Date.now(), desk: 'main', text: 'contoh' }]); true`);
+        assert.equal(await empty(), true, 'one entry: the message is gone');
+        assert.equal(await val(page, `document.querySelectorAll('#log li').length`), 1);
+        await val(page, `renderLog([]); true`);
+        assert.equal(await empty(), false, 'back to no entries: the message is back');
+      } finally {
+        await val(page, `renderLog((serverState && serverState.log) || []); true`);
+        await back(page);
+      }
+    },
+  },
+  {
+    name: 'responsive: a phone on its side (844 x 390) also shows only the grabber and the tabs of the closed sheet',
+    async run(page) {
+      try {
+        await page.viewport(844, 390, { touch: true });
+        await page.waitFor(`layout.cols === 0`);
+        const a = await rect(page, 'aside');
+        assert.ok(a.t >= 390 - 109 && a.t <= 390 - 107, 'a peek of 108px ' + JSON.stringify(a));
+        await val(page, `document.getElementById('sheet-toggle').click(); true`);
+        await page.waitFor(`document.getElementById('side-panel').classList.contains('is-open')`);
+        await page.sleep(400);
+        await noOverflow(page, 'landscape phone');
+        await val(page, `document.getElementById('sheet-toggle').click(); true`);
+      } finally { await back(page); }
+    },
+  },
+  {
+    name: 'responsive: iPhone Safari with a toolbar floating over a full-height page keeps the peek 88px clear of it; with the older bars (shorter page) and on other phones it does not',
+    async run(page) {
+      const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+      const clear = async () => { await val(page, `updateBarClear(); true`); return val(page, `document.documentElement.style.getPropertyValue('--bar-clear')`); };
+      try {
+        await page.send('Emulation.setUserAgentOverride', { userAgent: IPHONE });
+        // iPhone 11 with the floating toolbar: the page is as tall as the screen (896)
+        await page.send('Emulation.setDeviceMetricsOverride', { width: 414, height: 896, deviceScaleFactor: 2, mobile: true, screenWidth: 414, screenHeight: 896 });
+        await page.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+        await page.sleep(900);
+        assert.equal(await clear(), '88px');
+        const a = await rect(page, 'aside');
+        assert.ok(a.t >= 896 - 197 && a.t <= 896 - 195, 'peek 108px plus the 88px that stay clear ' + JSON.stringify(a));
+        // iPhone 11 with the older bars: the page is shorter than the screen, the bars take their own room
+        await page.send('Emulation.setDeviceMetricsOverride', { width: 414, height: 715, deviceScaleFactor: 2, mobile: true, screenWidth: 414, screenHeight: 896 });
+        await page.sleep(900);
+        assert.equal(await clear(), '0px');
+        const b = await rect(page, 'aside');
+        assert.ok(b.t >= 715 - 109 && b.t <= 715 - 107, 'peek 108px ' + JSON.stringify(b));
+        // another phone (not an iPhone) never gets it
+        await page.send('Emulation.setUserAgentOverride', { userAgent: '' });
+        await page.send('Emulation.setDeviceMetricsOverride', { width: 414, height: 896, deviceScaleFactor: 2, mobile: true, screenWidth: 414, screenHeight: 896 });
+        await page.sleep(900);
+        assert.equal(await clear(), '0px');
+      } finally {
+        await page.send('Emulation.setUserAgentOverride', { userAgent: '' });
+        await back(page);
+        await val(page, `updateBarClear(); true`);
+      }
     },
   },
   {

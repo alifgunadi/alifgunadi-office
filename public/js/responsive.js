@@ -26,17 +26,93 @@ sheetEl.addEventListener('keydown', (e) => {
 });
 onMq(mqPhone, () => { if (!mqPhone.matches) setSheet(false); updateTaskPos(); });
 
+// ---- a toolbar floating over the page: iPhone Safari (iOS 26) draws its toolbar over the bottom of a page that is as tall as the screen,
+// so the peek of the sheet would sit under it. Keep it clear then. With the older bars the page is shorter than the screen: nothing to do.
+const BAR_CLEAR_PX = 88; // the floating toolbar of iPhone 11: its top edge is about 82px above the bottom of the screen, plus a little air
+function updateBarClear() {
+  const iphone = /iPhone|iPod/.test(navigator.userAgent);
+  const portrait = window.innerHeight > window.innerWidth;
+  const fullHeight = !!window.screen && window.innerHeight >= window.screen.height - 120;
+  document.documentElement.style.setProperty('--bar-clear', (iphone && portrait && fullHeight && mqPhone.matches ? BAR_CLEAR_PX : 0) + 'px');
+}
+updateBarClear();
+window.addEventListener('resize', updateBarClear);
+
+// ---- dragging the sheet: swipe the grabber or the tab bar up to open it and down to close it (a plain tap still works as before).
+// The sheet follows the finger and, on release, goes to the nearer end (or the way a quick flick was going). The touch-action of the
+// two grab areas is none (app.css), so the browser does not scroll or pull to refresh instead. Only the grabber and the tabs start a
+// drag: everything below them keeps its own scrolling.
+const DRAG_START_PX = 8; // below this a press is a tap, not a drag
+const FLICK_PX_PER_MS = 0.5;
+const sheetGrabAreas = [sheetBtn, sheetEl.querySelector('.tabs')].filter(Boolean);
+let sheetDrag = null; // { id, y0, offset0, closedAt, offset, moved, lastY, lastT, v }
+let sheetSwallowClickUntil = 0;
+
+// How far down the closed sheet sits, in pixels (the sheet is as tall as when open, minus the peek that stays visible).
+function sheetClosedOffset() {
+  const cs = getComputedStyle(sheetEl);
+  const peek = (parseFloat(cs.getPropertyValue('--peek-base')) || 108) + (parseFloat(cs.getPropertyValue('--bar-clear')) || 0);
+  return Math.max(0, sheetEl.offsetHeight - peek);
+}
+
+function sheetDragMove(e) {
+  const d = sheetDrag;
+  if (!d || e.pointerId !== d.id) return;
+  const dy = e.clientY - d.y0;
+  if (!d.moved) {
+    if (Math.abs(dy) < DRAG_START_PX) return;
+    d.moved = true;
+    sheetEl.classList.add('is-dragging');
+  }
+  d.offset = Math.min(d.closedAt, Math.max(0, d.offset0 + dy));
+  sheetEl.style.transform = 'translateY(' + d.offset + 'px)';
+  const now = performance.now();
+  if (now > d.lastT) d.v = (e.clientY - d.lastY) / (now - d.lastT);
+  d.lastY = e.clientY;
+  d.lastT = now;
+  e.preventDefault();
+}
+
+function sheetDragEnd(e) {
+  const d = sheetDrag;
+  if (!d || e.pointerId !== d.id) return;
+  sheetDrag = null;
+  window.removeEventListener('pointermove', sheetDragMove);
+  window.removeEventListener('pointerup', sheetDragEnd);
+  window.removeEventListener('pointercancel', sheetDragEnd);
+  if (!d.moved) return; // a tap: the click that follows toggles or opens as usual
+  const open = Math.abs(d.v) > FLICK_PX_PER_MS ? d.v < 0 : d.offset < d.closedAt / 2;
+  sheetEl.classList.remove('is-dragging');
+  sheetEl.style.transform = ''; // back to the CSS position of the new state, which animates from where the finger let go
+  setSheet(open);
+  sheetSwallowClickUntil = Date.now() + 400; // the click that ends a drag must not toggle the sheet again
+}
+
+for (const area of sheetGrabAreas) {
+  area.addEventListener('pointerdown', (e) => {
+    if (!mqPhone.matches || sheetDrag || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const closedAt = sheetClosedOffset();
+    const offset0 = sheetEl.classList.contains('is-open') ? 0 : closedAt;
+    sheetDrag = { id: e.pointerId, y0: e.clientY, offset0, closedAt, offset: offset0, moved: false, lastY: e.clientY, lastT: performance.now(), v: 0 };
+    window.addEventListener('pointermove', sheetDragMove, { passive: false });
+    window.addEventListener('pointerup', sheetDragEnd);
+    window.addEventListener('pointercancel', sheetDragEnd);
+  });
+}
+sheetEl.addEventListener('click', (e) => {
+  if (Date.now() < sheetSwallowClickUntil) { e.stopPropagation(); e.preventDefault(); }
+}, true);
+
 // ---- "n / total" under the task cards while they scroll sideways (tablet)
 const taskPosEl = document.getElementById('task-pos');
 let taskPosTimer = 0;
 
 function updateTaskPos() {
   const cards = [...taskListEl.querySelectorAll('.task-card')];
-  // phone: under the first card of the closed sheet, a hint about the others; tablet: "n / total" while the cards scroll sideways
+  // phone: the closed sheet shows only the grabber and the tabs (the count is on the Tasks tab), so there is no hint to show;
+  // tablet: "n / total" while the cards scroll sideways
   if (mqPhone.matches) {
-    const more = cards.length - 1, peek = !sheetEl.classList.contains('is-open');
-    taskPosEl.hidden = !(peek && more > 0);
-    if (!taskPosEl.hidden) setText(taskPosEl, 'Geser ke atas untuk melihat ' + more + ' task lain');
+    taskPosEl.hidden = true;
     return;
   }
   const show = mqTablet.matches && cards.length > 0;

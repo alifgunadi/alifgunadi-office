@@ -134,6 +134,20 @@ async function launch() {
       await send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
       await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
     },
+    // One finger in client coordinates (touch emulation must be on: viewport(w, h, { touch: true })). swipe moves in `steps`
+    // equal steps, `stepMs` apart: a short pause per step reads as a slow drag, a long one is slower still.
+    async tap(x, y) {
+      await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
+      await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    },
+    async swipe(x, y0, y1, { steps = 8, stepMs = 16 } = {}) {
+      await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: y0 }] });
+      for (let i = 1; i <= steps; i++) {
+        await send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: y0 + ((y1 - y0) * i) / steps }] });
+        await sleep(stepMs);
+      }
+      await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    },
     async screenshot(file) {
       const s = await send('Page.captureScreenshot', { format: 'png' });
       fs.writeFileSync(file, Buffer.from(s.data, 'base64'));

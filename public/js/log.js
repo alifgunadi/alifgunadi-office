@@ -1,12 +1,14 @@
 'use strict';
 
 const logEl = document.getElementById('log');
+const activityEmptyEl = document.getElementById('activity-empty');
 const logKey = (e) => (e ? e.t + '|' + e.desk + '|' + e.text : '');
 let lastLogKey = '';
 function renderLog(entries) {
   // The server sends the whole log each time, but normally only a few entries are new (oldest first).
   // Add just those on top and trim the tail; rebuild only when the previous newest entry is not found.
   entries = entries.filter(Boolean);
+  activityEmptyEl.hidden = entries.length > 0; // an empty log says so instead of leaving a blank panel
   const newest = logKey(entries[entries.length - 1]);
   if (newest === lastLogKey && logEl.childElementCount === entries.length) return;
   let from = 0;
