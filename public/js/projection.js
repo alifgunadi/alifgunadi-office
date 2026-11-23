@@ -118,14 +118,14 @@ function sideFace(side, x0, y0, x1, y1, z0, z1) {
 const FRONT_SIDE = ['+y', '+x', '-y', '-x'];
 const FLANK_SIDE = ['+x', '-y', '-x', '+y'];
 
-// Extruded box: lit top, front face and shaded side face (which sides those are depends on the camera turn). o.glass = translucent.
+// Extruded box: lit top, front face and shaded side face (which sides those are depends on the camera turn). o.glass = translucent; o.top / o.flank = exact colours of the top and the shaded side.
 function box(x0, y0, x1, y1, z0, z1, col, o) {
   o = o || {};
   if (!o.noShadow) groundShadow(x0, y0, x1, y1, z1);
   const g = !!o.glass;
   fillPoly(sideFace(FRONT_SIDE[P.rot], x0, y0, x1, y1, z0, z1), g ? 'rgba(160,215,240,0.30)' : col);
-  if (P.s > 0) fillPoly(sideFace(FLANK_SIDE[P.rot], x0, y0, x1, y1, z0, z1), g ? 'rgba(120,190,225,0.38)' : mix(col, -0.22));
-  fillPoly([pj(x0, y0, z1), pj(x1, y0, z1), pj(x1, y1, z1), pj(x0, y1, z1)], g ? 'rgba(235,248,255,0.65)' : mix(col, 0.16));
+  if (P.s > 0) fillPoly(sideFace(FLANK_SIDE[P.rot], x0, y0, x1, y1, z0, z1), g ? 'rgba(120,190,225,0.38)' : (o.flank || mix(col, -0.22)));
+  fillPoly([pj(x0, y0, z1), pj(x1, y0, z1), pj(x1, y1, z1), pj(x0, y1, z1)], g ? 'rgba(235,248,255,0.65)' : (o.top || mix(col, 0.16)));
   if (g) {
     ctx.strokeStyle = 'rgba(255,255,255,0.9)';
     ctx.lineWidth = 1;

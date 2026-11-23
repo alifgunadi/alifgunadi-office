@@ -49,15 +49,14 @@ function releaseSlot(a) {
   a.slot = -1;
 }
 
-// Route desk -> own door -> corridor -> lounge door -> hub -> slot, in world coords.
+// Route desk -> own door (-> the next room's door) -> lounge hub -> slot, in world coords.
 function buildRoute(a, slot) {
   const p = layout.byId.get(a.id), g = layout.lounge;
   if (!p || !g) return false;
   const k = p.k, lane = p.y + 142 * k, pts = [];
   pts.push([p.x + CX * k, p.y + 78 * k], [p.x + (CX + 86) * k, p.y + 84 * k], [p.x + (CX + 86) * k, lane]);
   if (layout.cols === 0) {
-    const d = p.zone.doors.find((q) => q.side === 'top' || q.side === 'bottom');
-    if (d) pts.push([d.x, lane], [d.x, d.outY], [g.door.x, d.outY]);
+    for (const q of p.tail) pts.push(q); // out of the room by its door, then along the lounge's hub row (see buildLayout)
     pts.push([g.hub.x, g.hub.y]);
   } else {
     const gx = p.zone.x + GX_OFF;

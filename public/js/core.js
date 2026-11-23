@@ -7,6 +7,8 @@ const GAP = 28;                      // corridor width between rooms (wide layou
 const CORRIDOR = '#efe9da';
 const T_WALL = 8, T_GLASS = 5;          // wall thickness
 const WH = 22, WL = 8, WF = 6, WG = 24; // wall heights: tall, lowered back wall, front curb, glass
+const WX = 52;                           // wide floor plan: the two outer back walls (with windows)
+const PLAN_W = 1500, PLAN_H = 1000;      // wide floor plan: the whole floor, s:t = 3:2
 const SEAT = 12;                         // seat height of chairs and sofa cushions
 const GX_OFF = 24;                       // stacked layouts: walking gutter offset inside each zone
 const WALK_SPEED = 140, MAX_TRIP_S = 3.5, STRIDE = 0.09;

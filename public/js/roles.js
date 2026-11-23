@@ -29,12 +29,14 @@ const ZONE_IDS = OfficeRoles.ZONE_IDS;
 const ZONE_OF = Object.create(null);
 for (const [zone, ids] of Object.entries(ZONE_IDS)) for (const id of ids) ZONE_OF[id] = zone;
 
-// Door templates (wide layout). `at` is a fraction along the wall. Stacked layouts use a side gutter instead.
+// Rooms: floor colour, accent colour (legend, minimap, stacked walls) and the outline of the floor plan. Doors are placed by buildLayout
+// (layout.js): the wide floor plan puts them in the walls between rooms, the stacked layouts use a side gutter.
 const ZONES = {
-  trainer: { label: 'AlifGunadi Office', floor: '#ebe5f8', wall: '#9b8bd0', glass: true, doors: [{ side: 'bottom', at: 0.85, len: 44 }] },
-  product: { label: 'Product', floor: '#fdf0d2', wall: '#d9a441', doors: [{ side: 'bottom', at: 0.85, len: 70 }] },
-  eng: { label: 'Engineering', floor: '#dcebfa', wall: '#6b9bd6', doors: [{ side: 'top', at: 0.5, len: 80 }] },
-  qa: { label: 'Quality & Security', floor: '#e0f3e5', wall: '#6cb58a', glass: true, doors: [{ side: 'top', at: 0.5, len: 70 }] },
-  lounge: { label: 'Lounge & Pantry', floor: '#fbe6dc', wall: '#e0a58b', doors: [{ side: 'left', at: 0.6, len: 70 }, { side: 'bottom', at: 0.2, len: 70 }] },
-  guest: { label: 'Guests', floor: '#eceef2', wall: '#a3acba', doors: [{ side: 'top', at: 0.5, len: 80 }] },
+  trainer: { label: 'AlifGunadi Office', floor: '#f6e7c8', stroke: '#e2cfa3', wall: '#d9a441', glass: true },
+  product: { label: 'Product', floor: '#dce8fb', stroke: '#b9ccee', wall: '#6b9bd6' },
+  eng: { label: 'Engineering', floor: '#ddf1e4', stroke: '#b4dbc2', wall: '#6cb58a' },
+  qa: { label: 'Quality & Security', floor: '#f7dde0', stroke: '#e5b8be', wall: '#e0848f', glass: true },
+  lounge: { label: 'Lounge & Pantry', floor: '#efe6f7', stroke: '#d4c3e6', wall: '#9b8bd0' },
+  guest: { label: 'Guests', floor: '#eceef2', stroke: '#cfd5df', wall: '#a3acba' },
 };
+
