@@ -137,8 +137,8 @@ than show activity, so it is **off by default** and strict when on.
 
   ```powershell
   # Review first: icacls C:\projects
-  icacls C:\projects\agent-office /inheritance:d
-  icacls C:\projects\agent-office /remove "NT AUTHORITY\Authenticated Users"
+  icacls C:\projects\alifgunadi-office /inheritance:d
+  icacls C:\projects\alifgunadi-office /remove "NT AUTHORITY\Authenticated Users"
   ```
 
   (Default Windows permissions on `C:\` let every signed-in user modify new top-level folders.)

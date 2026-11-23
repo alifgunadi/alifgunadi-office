@@ -10,7 +10,7 @@ Check Node with `node --version`.
 
 ### 1. Download
 
-**Easiest:** open the [latest release](https://github.com/alifgunadi/agent-office/releases/latest), download `AgentOffice-<version>-win-x64.zip`
+**Easiest:** open the [latest release](https://github.com/alifgunadi/alifgunadi-office/releases/latest), download `AgentOffice-<version>-win-x64.zip`
 and extract it to a folder you will keep (for example `C:\Tools\AgentOffice`). It already contains the desktop app (`desktop\app\AgentOffice.exe`,
 no .NET install needed) and a `START-HERE.txt`. Windows SmartScreen may warn because the app is not code-signed: choose **More info → Run anyway**.
 Then continue with step 2 below; skip the "desktop app" build step.
@@ -18,12 +18,12 @@ Then continue with step 2 below; skip the "desktop app" build step.
 **From source**, pick one:
 
 ```powershell
-git clone https://github.com/alifgunadi/agent-office.git
-cd agent-office
+git clone https://github.com/alifgunadi/alifgunadi-office.git
+cd alifgunadi-office
 ```
 
-or, without Git: open <https://github.com/alifgunadi/agent-office>, choose **Code → Download ZIP**, extract it somewhere you will keep
-(for example `C:\Tools\agent-office`) and open PowerShell in that folder. Keep the folder: the hooks point at it.
+or, without Git: open <https://github.com/alifgunadi/alifgunadi-office>, choose **Code → Download ZIP**, extract it somewhere you will keep
+(for example `C:\Tools\alifgunadi-office`) and open PowerShell in that folder. Keep the folder: the hooks point at it.
 
 ### 2. Install (connect your agents)
 
@@ -160,7 +160,7 @@ open the office through `start-office.ps1` or the desktop app (they log you in w
 
 ```powershell
 $env:AGENT_OFFICE_RUNNER = "claude"                                   # or "custom", see SECURITY.md
-$env:AGENT_OFFICE_WORKSPACES = "agent-office=C:\projects\agent-office;docs=C:\projects\docs"
+$env:AGENT_OFFICE_WORKSPACES = "alifgunadi-office=C:\projects\alifgunadi-office;docs=C:\projects\docs"
 powershell -File stop-office.ps1; powershell -File start-office.ps1   # restart so the server sees them
 ```
 

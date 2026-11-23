@@ -11,7 +11,7 @@ Agent Office as its own Windows app: one window, no browser tabs, same pixels as
 Requires the .NET 10 SDK (build), .NET 10 Desktop Runtime, Node, and the WebView2 Runtime (preinstalled on Windows 11).
 
 ```powershell
-cd C:\projects\agent-office
+cd C:\projects\alifgunadi-office
 dotnet publish desktop\host-dotnet -c Release -o desktop\app
 powershell -ExecutionPolicy Bypass -File desktop\install-shortcut.ps1   # "Agent Office" on Desktop + Start Menu
 ```
