@@ -123,8 +123,11 @@ describe('OpenCode adapter', () => {
 
   after(() => cleanup?.());
 
+  // Returns as soon as `count` events have arrived. The deadline is generous on purpose: it only
+  // matters when the machine is slow (a shared CI runner), and a passing run never waits for it.
   const lastSent = async (count = 1) => {
-    for (let i = 0; i < 40 && capture.received.length < count; i++) await sleep(25);
+    const deadline = Date.now() + 10_000;
+    while (capture.received.length < count && Date.now() < deadline) await sleep(10);
     return capture.received;
   };
 
