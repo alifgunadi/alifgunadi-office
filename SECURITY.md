@@ -48,7 +48,9 @@ than show activity, so it is **off by default** and strict when on.
   `auto`. `bypassPermissions` and anything else is refused (falls back to `plan`). Choosing a mode that edits files is your decision:
   a prompt can then change files in the chosen folder.
   Checked against a real `claude` (2026-11-21): in `plan` mode a run in a test folder read a file, answered, exited 0 and changed nothing.
-  The edit modes (`acceptEdits`, `auto`, `dontAsk`) have only been exercised with the stand-in program so far.
+  Also checked against a real `claude` (2026-11-23): one prompt addressed to two desks ran as two parallel tasks that both read the folder and answered,
+  and in `acceptEdits` mode a run created exactly the one file it was asked to, inside the chosen folder and nowhere else. `auto` and `dontAsk` have only been
+  exercised with the stand-in program so far.
 - **Which folders.** The page names a folder only by id; the server turns the id into a path and checks it again at every run.
   The folders come from one of these, strongest first: (1) `AGENT_OFFICE_WORKSPACES=name=C:\path;other=D:\path`, a fixed list that
   the page cannot change; (2) a **parent folder chosen in the Settings dialog** (saved in `%LOCALAPPDATA%\AgentOffice\settings.json`, or
