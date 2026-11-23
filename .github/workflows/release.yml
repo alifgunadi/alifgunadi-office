@@ -1,0 +1,120 @@
+name: Release
+
+# Push a tag like v1.0.1 (git tag v1.0.1 && git push origin v1.0.1) and this builds the desktop app, packs it together with the
+# server files and publishes a GitHub Release with a ZIP anyone can download. It can also be started by hand to test the build:
+# the ZIP is then only attached to the run as an artifact, no release is made.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # create the release and upload the ZIP
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Tests
+        run: npm test
+
+      - name: Name the package
+        id: meta
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then v="${GITHUB_REF_NAME}"; else v="dev-${GITHUB_SHA::7}"; fi
+          echo "name=AgentOffice-${v}-win-x64" >> "$GITHUB_OUTPUT"
+          echo "version=${v}" >> "$GITHUB_OUTPUT"
+
+      # Self-contained: the person who downloads it does not need to install .NET. Node.js 22+ is still needed (the server runs on it).
+      - name: Build the desktop app
+        run: dotnet publish desktop/host-dotnet -c Release -r win-x64 --self-contained true -o stage/desktop/app
+
+      - name: Assemble the package
+        shell: bash
+        run: |
+          name='${{ steps.meta.outputs.name }}'
+          mkdir -p "pkg/${name}"
+          # tracked files only (no project/, no build output), then the built app on top
+          git archive HEAD | tar -x -C "pkg/${name}"
+          rm -rf "pkg/${name}/.github" "pkg/${name}/test"
+          mkdir -p "pkg/${name}/desktop/app"
+          cp -R stage/desktop/app/. "pkg/${name}/desktop/app/"
+          cat > "pkg/${name}/START-HERE.txt" <<'EOF'
+          Agent Office
+          ============
+          1. Install Node.js 22 or newer from https://nodejs.org/ (check with: node --version).
+          2. Keep this folder somewhere permanent, for example C:\Tools\AgentOffice. The agent hooks point at it.
+          3. Open PowerShell in this folder and run:
+               node install.js
+             then restart Claude Code / Antigravity / OpenCode.
+          4. Open the app: double-click desktop\app\AgentOffice.exe
+             (or run: powershell -ExecutionPolicy Bypass -File desktop\install-shortcut.ps1  for a Desktop and Start Menu icon).
+             The browser version also works: powershell -File start-office.ps1
+
+          Full guide: README.md. Running agents from the page is off by default; read SECURITY.md first.
+          EOF
+
+      - name: Zip and checksum
+        shell: pwsh
+        run: |
+          $name = '${{ steps.meta.outputs.name }}'
+          Compress-Archive -Path "pkg/$name" -DestinationPath "$name.zip" -CompressionLevel Optimal
+          $hash = (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  $name.zip" | Out-File -Encoding ascii "$name.zip.sha256"
+          Get-Item "$name.zip" | Select-Object Name, Length
+
+      - name: Smoke test the packaged app files
+        shell: bash
+        run: |
+          name='${{ steps.meta.outputs.name }}'
+          for f in server.js ensure-server.js install.js hook.js public/index.html desktop/app/AgentOffice.exe START-HERE.txt; do
+            test -f "pkg/${name}/${f}" || { echo "missing from package: ${f}"; exit 1; }
+          done
+          test ! -e "pkg/${name}/project" || { echo "project/ must never be packaged"; exit 1; }
+          # the packaged server starts and answers
+          cd "pkg/${name}"
+          AGENT_OFFICE_PORT=4398 AGENT_OFFICE_DATA_DIR="$RUNNER_TEMP/aodata" AGENT_OFFICE_AUTO_STOP=0 node server.js &
+          pid=$!
+          ok=0
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            sleep 1
+            if curl -fs http://127.0.0.1:4398/health | grep -q '"ok":true'; then ok=1; break; fi
+          done
+          kill $pid 2>/dev/null || true
+          test "$ok" = 1 || { echo "packaged server did not answer /health"; exit 1; }
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.meta.outputs.name }}
+          path: |
+            ${{ steps.meta.outputs.name }}.zip
+            ${{ steps.meta.outputs.name }}.zip.sha256
+
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ steps.meta.outputs.name }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          notes="Download **${NAME}.zip**, extract it to a folder you will keep, and follow **START-HERE.txt** (Node.js 22+ is required; .NET is included).
+
+          Verify the download with the SHA-256 in \`${NAME}.zip.sha256\`.
+
+          The desktop app is not code-signed, so Windows SmartScreen may warn on first start (More info, then Run anyway). The source is in this repository."
+          gh release create "$TAG" "${NAME}.zip" "${NAME}.zip.sha256" --title "Agent Office ${TAG}" --notes "$notes" --verify-tag

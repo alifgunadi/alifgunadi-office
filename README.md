@@ -10,7 +10,12 @@ Check Node with `node --version`.
 
 ### 1. Download
 
-Pick one:
+**Easiest:** open the [latest release](https://github.com/alifgunadi/agent-office/releases/latest), download `AgentOffice-<version>-win-x64.zip`
+and extract it to a folder you will keep (for example `C:\Tools\AgentOffice`). It already contains the desktop app (`desktop\app\AgentOffice.exe`,
+no .NET install needed) and a `START-HERE.txt`. Windows SmartScreen may warn because the app is not code-signed: choose **More info → Run anyway**.
+Then continue with step 2 below; skip the "desktop app" build step.
+
+**From source**, pick one:
 
 ```powershell
 git clone https://github.com/alifgunadi/agent-office.git
@@ -41,7 +46,8 @@ The server also starts by itself at the beginning of every Claude Code session.
 
 ### Optional: desktop app (own window, Desktop and Start Menu icon)
 
-Needs the [.NET 10 SDK](https://dotnet.microsoft.com/download) to build once (the WebView2 Runtime is already part of Windows 11).
+With the release ZIP the app is already built: double-click `desktop\app\AgentOffice.exe`, or only run the shortcut line below.
+From source you build it once with the [.NET 10 SDK](https://dotnet.microsoft.com/download) (the WebView2 Runtime is already part of Windows 11):
 
 ```powershell
 dotnet publish desktop\host-dotnet -c Release -o desktop\app
