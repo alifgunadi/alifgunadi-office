@@ -1,2 +1,5 @@
 # Private project materials (docs, research) - never commit
 project/
+.claude/
+.agents/
+node_modules/
