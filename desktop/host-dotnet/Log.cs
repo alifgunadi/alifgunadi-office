@@ -1,10 +1,10 @@
-namespace AgentOffice.Desktop;
+namespace AlifGunadiOffice.Desktop;
 
-/// <summary>Host log at %TEMP%\agent-office-desktop.log (separate from the server log).</summary>
+/// <summary>Host log at %TEMP%\alifgunadi-office-desktop.log (separate from the server log).</summary>
 internal static class Log
 {
     private const long MaxBytes = 512 * 1024;
-    private static readonly string FilePath = Path.Combine(Path.GetTempPath(), "agent-office-desktop.log");
+    private static readonly string FilePath = Path.Combine(Path.GetTempPath(), "alifgunadi-office-desktop.log");
     private static readonly object Gate = new();
 
     public static void Info(string message) => Write("INFO", message);

@@ -1,8 +1,8 @@
 using System.Text.Json;
 
-namespace AgentOffice.Desktop;
+namespace AlifGunadiOffice.Desktop;
 
-/// <summary>Last window bounds, stored in %LOCALAPPDATA%\AgentOffice\window.json.</summary>
+/// <summary>Last window bounds, stored in %LOCALAPPDATA%\AlifGunadiOffice\window.json.</summary>
 internal sealed class WindowSettings
 {
     public int X { get; set; }
@@ -12,7 +12,7 @@ internal sealed class WindowSettings
     public bool Maximized { get; set; }
 
     public static string DataDir => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AgentOffice");
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AlifGunadiOffice");
 
     private static string FilePath => Path.Combine(DataDir, "window.json");
 

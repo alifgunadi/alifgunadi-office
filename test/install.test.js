@@ -15,7 +15,7 @@ const slashRoot = ROOT.replace(/\\/g, '/');
 let home;
 
 beforeEach(() => {
-  home = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-office-install-test-'));
+  home = fs.mkdtempSync(path.join(os.tmpdir(), 'alifgunadi-office-install-test-'));
 });
 afterEach(() => fs.rmSync(home, { recursive: true, force: true }));
 
@@ -37,13 +37,13 @@ describe('install: fresh machine', () => {
 
     const agy = path.join(home, '.gemini', 'config', 'plugins', 'migrated-settings');
     assert.ok(fs.readFileSync(path.join(agy, 'agy-office-hook.js'), 'utf8').includes(`'${slashRoot}'`));
-    assert.ok(readJson('.gemini', 'config', 'plugins', 'migrated-settings', 'hooks.json')['agent-office'].SessionStart);
-    assert.ok(fs.readFileSync(path.join(home, '.config', 'opencode', 'plugins', 'agent-office.js'), 'utf8').includes(`"${slashRoot}"`));
+    assert.ok(readJson('.gemini', 'config', 'plugins', 'migrated-settings', 'hooks.json')['alifgunadi-office'].SessionStart);
+    assert.ok(fs.readFileSync(path.join(home, '.config', 'opencode', 'plugins', 'alifgunadi-office.js'), 'utf8').includes(`"${slashRoot}"`));
   });
 
   it('leaves no placeholder behind', () => {
     run();
-    for (const file of ['.claude/settings.json', '.gemini/config/plugins/migrated-settings/agy-office-hook.js', '.config/opencode/plugins/agent-office.js']) {
+    for (const file of ['.claude/settings.json', '.gemini/config/plugins/migrated-settings/agy-office-hook.js', '.config/opencode/plugins/alifgunadi-office.js']) {
       const text = fs.readFileSync(path.join(home, file), 'utf8');
       assert.ok(!text.includes(ROOT_PLACEHOLDER), file);
     }
@@ -78,14 +78,37 @@ describe('install: idempotence and safety', () => {
     assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home, saved[0]), 'utf8')), original);
   });
 
-  it('moves an existing Agent Office hook to the new location instead of duplicating it', () => {
+  it('moves an existing AlifGunadi Office hook to the new location instead of duplicating it', () => {
     fs.mkdirSync(path.join(home, '.claude'), { recursive: true });
-    const old = { hooks: { PreToolUse: [{ hooks: [{ type: 'command', command: 'node "D:/old/agent-office/hook.js"', timeout: 5 }] }] } };
+    const old = { hooks: { PreToolUse: [{ hooks: [{ type: 'command', command: 'node "D:/old/alifgunadi-office/hook.js"', timeout: 5 }] }] } };
     fs.writeFileSync(path.join(home, '.claude', 'settings.json'), JSON.stringify(old));
     run({ targets: ['claude'] });
     const commands = commandsOf(readJson('.claude', 'settings.json'), 'PreToolUse');
     assert.equal(commands.length, 1);
     assert.equal(commands[0], `node "${slashRoot}/hook.js"`);
+  });
+
+  it('replaces hooks installed under the old agent-office name instead of duplicating them', () => {
+    fs.mkdirSync(path.join(home, '.claude'), { recursive: true });
+    const old = { hooks: { PreToolUse: [{ hooks: [{ type: 'command', command: 'node "c:/projects/agent-office/hook.js"', timeout: 5 }] }] } };
+    fs.writeFileSync(path.join(home, '.claude', 'settings.json'), JSON.stringify(old));
+    run({ targets: ['claude'] });
+    assert.deepEqual(commandsOf(readJson('.claude', 'settings.json'), 'PreToolUse'), [`node "${slashRoot}/hook.js"`]);
+  });
+
+  it('retires the old Antigravity key and OpenCode plugin file from before the rename', () => {
+    const agy = path.join(home, '.gemini', 'config', 'plugins', 'migrated-settings');
+    const oc = path.join(home, '.config', 'opencode', 'plugins');
+    fs.mkdirSync(agy, { recursive: true });
+    fs.mkdirSync(oc, { recursive: true });
+    fs.writeFileSync(path.join(agy, 'hooks.json'), JSON.stringify({ 'agent-office': { Stop: [] }, 'other-plugin': { Stop: [] } }));
+    fs.writeFileSync(path.join(oc, 'agent-office.js'), '// old');
+    run({ targets: ['antigravity', 'opencode'] });
+    const hooks = readJson('.gemini', 'config', 'plugins', 'migrated-settings', 'hooks.json');
+    assert.equal(hooks['agent-office'], undefined);
+    assert.deepEqual(hooks['other-plugin'], { Stop: [] });
+    assert.ok(!fs.existsSync(path.join(oc, 'agent-office.js')));
+    assert.ok(fs.existsSync(path.join(oc, 'alifgunadi-office.js')));
   });
 
   it('does not touch a hook.js that belongs to another project', () => {
@@ -116,11 +139,11 @@ describe('install: idempotence and safety', () => {
   it('keeps other plugins in the Antigravity hooks.json', () => {
     const dir = path.join(home, '.gemini', 'config', 'plugins', 'migrated-settings');
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, 'hooks.json'), JSON.stringify({ 'other-plugin': { Stop: [] }, 'agent-office': { Stop: [] } }));
+    fs.writeFileSync(path.join(dir, 'hooks.json'), JSON.stringify({ 'other-plugin': { Stop: [] }, 'alifgunadi-office': { Stop: [] } }));
     run({ targets: ['antigravity'] });
     const hooks = readJson('.gemini', 'config', 'plugins', 'migrated-settings', 'hooks.json');
     assert.deepEqual(hooks['other-plugin'], { Stop: [] });
-    assert.ok(hooks['agent-office'].SessionStart);
+    assert.ok(hooks['alifgunadi-office'].SessionStart);
   });
 });
 
@@ -131,7 +154,7 @@ describe('install.js command line', () => {
     const r = cli('--home', home, '--target', 'opencode');
     assert.equal(r.status, 0, r.stderr);
     assert.match(r.stdout, /created\s+opencode/);
-    assert.ok(fs.existsSync(path.join(home, '.config', 'opencode', 'plugins', 'agent-office.js')));
+    assert.ok(fs.existsSync(path.join(home, '.config', 'opencode', 'plugins', 'alifgunadi-office.js')));
   });
 
   it('rejects an unknown target with a non-zero exit', () => {

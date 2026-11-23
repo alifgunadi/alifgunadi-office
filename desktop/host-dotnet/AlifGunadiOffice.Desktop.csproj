@@ -7,13 +7,13 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>AgentOffice</AssemblyName>
-    <RootNamespace>AgentOffice.Desktop</RootNamespace>
+    <AssemblyName>AlifGunadiOffice</AssemblyName>
+    <RootNamespace>AlifGunadiOffice.Desktop</RootNamespace>
     <ApplicationIcon>assets\app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <Product>Agent Office</Product>
-    <Version>1.0.0</Version>
+    <Product>AlifGunadi Office</Product>
+    <Version>1.0.1</Version>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- Small RAM footprint for an always-open window. -->
     <ServerGarbageCollection>false</ServerGarbageCollection>

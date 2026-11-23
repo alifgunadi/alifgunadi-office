@@ -1,4 +1,4 @@
-# Agent Office
+# AlifGunadi Office
 
 Live pixel-art office for Claude Code, Antigravity and OpenCode agents. Each role in `~/.claude/agents` (or Antigravity `team-*` plugins) has a fixed desk;
 characters type, wait, or sleep based on hook events.
@@ -10,8 +10,8 @@ Check Node with `node --version`.
 
 ### 1. Download
 
-**Easiest:** open the [latest release](https://github.com/alifgunadi/alifgunadi-office/releases/latest), download `AgentOffice-<version>-win-x64.zip`
-and extract it to a folder you will keep (for example `C:\Tools\AgentOffice`). It already contains the desktop app (`desktop\app\AgentOffice.exe`,
+**Easiest:** open the [latest release](https://github.com/alifgunadi/alifgunadi-office/releases/latest), download `AlifGunadiOffice-<version>-win-x64.zip`
+and extract it to a folder you will keep (for example `C:\Tools\AlifGunadiOffice`). It already contains the desktop app (`desktop\app\AlifGunadiOffice.exe`,
 no .NET install needed) and a `START-HERE.txt`. Windows SmartScreen may warn because the app is not code-signed: choose **More info → Run anyway**.
 Then continue with step 2 below; skip the "desktop app" build step.
 
@@ -46,7 +46,7 @@ The server also starts by itself at the beginning of every Claude Code session.
 
 ### Optional: desktop app (own window, Desktop and Start Menu icon)
 
-With the release ZIP the app is already built: double-click `desktop\app\AgentOffice.exe`, or only run the shortcut line below.
+With the release ZIP the app is already built: double-click `desktop\app\AlifGunadiOffice.exe`, or only run the shortcut line below.
 From source you build it once with the [.NET 10 SDK](https://dotnet.microsoft.com/download) (the WebView2 Runtime is already part of Windows 11):
 
 ```powershell
@@ -54,7 +54,7 @@ dotnet publish desktop\host-dotnet -c Release -o desktop\app
 powershell -ExecutionPolicy Bypass -File desktop\install-shortcut.ps1
 ```
 
-Then double-click **Agent Office**. More in [desktop/README.md](desktop/README.md).
+Then double-click **AlifGunadi Office**. More in [desktop/README.md](desktop/README.md).
 
 ### Optional: start every time you log in
 
@@ -65,11 +65,11 @@ powershell -File install-autostart.ps1      # remove with uninstall-autostart.ps
 ### Update or uninstall
 
 - **Update:** `git pull` (or download the ZIP again), then `node install.js` and restart the office (Restart in the gear menu of the page). Rebuild the desktop app only if `desktop\` changed.
-- **Uninstall:** run `stop-office.ps1`, `desktop\uninstall-shortcut.ps1` and `uninstall-autostart.ps1` if you used them, remove the Agent Office entries from `~/.claude/settings.json` (or restore the `.bak-<timestamp>` file `install.js` made), then delete the folder.
+- **Uninstall:** run `stop-office.ps1`, `desktop\uninstall-shortcut.ps1` and `uninstall-autostart.ps1` if you used them, remove the AlifGunadi Office entries from `~/.claude/settings.json` (or restore the `.bak-<timestamp>` file `install.js` made), then delete the folder.
 
 ### Something does not work?
 
-- Nothing on the page: open <http://127.0.0.1:4317/health>. If it does not answer, run `node server.js` in the folder and read the message; the log is `%TEMP%\agent-office.log`.
+- Nothing on the page: open <http://127.0.0.1:4317/health>. If it does not answer, run `node server.js` in the folder and read the message; the log is `%TEMP%\alifgunadi-office.log`.
 - Port 4317 is taken: see [Change port](#change-port).
 - Desks do not move: restart the agent after `node install.js`, and see the notes for each agent below.
 - Running agents from the page is **off by default**; see [Starting tasks from the page](#starting-tasks-from-the-page-optional-off-by-default) and read [SECURITY.md](SECURITY.md) first.
@@ -82,7 +82,7 @@ powershell -File install-autostart.ps1      # remove with uninstall-autostart.ps
 - `SECURITY.md` - what the server protects against, what it does not, and how to report a problem.
 - `ensure-server.js` - starts the server in the background if it is not running (silent, idempotent).
 - `install.js` - connects this checkout to Claude Code, Antigravity and OpenCode (see below).
-- `hooks-settings-snippet.json` - hooks template used by `install.js` (`__AGENT_OFFICE_ROOT__` is replaced by this checkout's path).
+- `hooks-settings-snippet.json` - hooks template used by `install.js` (`__ALIFGUNADI_OFFICE_ROOT__` is replaced by this checkout's path).
 - `adapters/` - the Antigravity hook adapter and the OpenCode plugin.
 - `docs/event-schema.json` - the `POST /event` contract for anything that wants to report to the office.
 - `test/` - `npm test` runs the Node tests (no install needed).
@@ -98,11 +98,11 @@ Restart the agents afterwards so they reload their hooks.
 
 | Target | What it writes |
 |---|---|
-| `claude` | Merges the hooks from `hooks-settings-snippet.json` into `~/.claude/settings.json`. Your other settings and hooks are kept; an existing Agent Office hook that points at another folder is moved to this one. |
-| `antigravity` | `agy-office-hook.js` and the `agent-office` entry of `hooks.json` in `~/.gemini/config/plugins/migrated-settings/` (other plugins' entries are kept). |
-| `opencode` | `~/.config/opencode/plugins/agent-office.js`. OpenCode loads every file in that folder; no entry in `opencode.json` is needed. |
+| `claude` | Merges the hooks from `hooks-settings-snippet.json` into `~/.claude/settings.json`. Your other settings and hooks are kept; an existing AlifGunadi Office hook that points at another folder is moved to this one. |
+| `antigravity` | `agy-office-hook.js` and the `alifgunadi-office` entry of `hooks.json` in `~/.gemini/config/plugins/migrated-settings/` (other plugins' entries are kept). |
+| `opencode` | `~/.config/opencode/plugins/alifgunadi-office.js`. OpenCode loads every file in that folder; no entry in `opencode.json` is needed. |
 
-The adapters find this checkout through the path `install.js` writes into them, or through the `AGENT_OFFICE_ROOT` environment variable.
+The adapters find this checkout through the path `install.js` writes into them, or through the `ALIFGUNADI_OFFICE_ROOT` environment variable.
 
 ### Claude Code
 On `SessionStart`, `ensure-server.js` starts `server.js` if it is not already running, and `hook.js` forwards the lifecycle events
@@ -122,10 +122,10 @@ The adapter subscribes to `SessionStart`, `PreInvocation`, `PostToolUse` (matche
 - `Stop`: post `SubagentStop` for any active subagents tracked in that `conversationId`, then `Stop` for `main`; print `{"decision":"stop"}`.
 
 ### OpenCode (V2)
-The plugin must `export default { id: "agent-office", setup(ctx) { ... } }`; the V2 loader rejects a default export
+The plugin must `export default { id: "alifgunadi-office", setup(ctx) { ... } }`; the V2 loader rejects a default export
 without `id` plus `setup` (or `effect`). Inside `setup(ctx)` it translates OpenCode events into the same payloads and POSTs them:
 
-| OpenCode source | Agent Office event |
+| OpenCode source | AlifGunadi Office event |
 |---|---|
 | `ctx.event.subscribe`: `session.created` / `session.deleted` | `SessionStart` / `SessionEnd` |
 | `session.execution.started` | `UserPromptSubmit` |
@@ -137,7 +137,7 @@ without `id` plus `setup` (or `effect`). Inside `setup(ctx)` it translates OpenC
 
 On load the plugin starts the server with `spawn("node", [".../ensure-server.js"])`. It uses `"node"`, not `process.execPath`:
 inside OpenCode `process.execPath` is the `opencode` binary and fails with `ENOTDIR`.
-Check `~/.local/share/opencode/log/opencode.log` for `agent-office` if no desk moves.
+Check `~/.local/share/opencode/log/opencode.log` for `alifgunadi-office` if no desk moves.
 
 Notes:
 - Nested agent IDs map to the flat desk id: `engineering/lead-dba` becomes `lead-dba`, so the agent file name must match `ROLE_IDS` in `lib/office.js`.
@@ -145,27 +145,27 @@ Notes:
 - Claude Code, Antigravity and OpenCode can all report to the same server at once. Sessions are told apart by `source` plus session id.
 
 ### Other senders
-`docs/event-schema.json` describes the event body. Send it with the header `X-Agent-Office: 1` to `http://127.0.0.1:<port>/event`.
+`docs/event-schema.json` describes the event body. Send it with the header `X-AlifGunadi-Office: 1` to `http://127.0.0.1:<port>/event`.
 `v` and `source` are optional (default: `1`, `claude-code`). Unknown fields are ignored, never stored.
 
 ## Privacy
 `hook.js` and the adapters forward only: event name, session/agent ids, agent type, tool name, the file's base name (no directory),
 the program name of a shell command (no `VAR=value` prefixes, directories or arguments), and a search pattern (max 40 chars).
 Never prompts, file contents, or full commands. The server binds to 127.0.0.1 only, checks the `Host` and `Origin` headers, and rejects
-requests without the `X-Agent-Office` header, so web pages in your browser cannot read or inject events. It also drops every field it does not know.
+requests without the `X-AlifGunadi-Office` header, so web pages in your browser cannot read or inject events. It also drops every field it does not know.
 
 ## Starting tasks from the page (optional, off by default)
 The prompt dock normally runs as a **simulation**. To let it really run an agent, switch the runner on in the server's environment and
 open the office through `start-office.ps1` or the desktop app (they log you in with a per-user token):
 
 ```powershell
-$env:AGENT_OFFICE_RUNNER = "claude"                                   # or "custom", see SECURITY.md
-$env:AGENT_OFFICE_WORKSPACES = "alifgunadi-office=C:\projects\alifgunadi-office;docs=C:\projects\docs"
+$env:ALIFGUNADI_OFFICE_RUNNER = "claude"                                   # or "custom", see SECURITY.md
+$env:ALIFGUNADI_OFFICE_WORKSPACES = "alifgunadi-office=C:\projects\alifgunadi-office;docs=C:\projects\docs"
 powershell -File stop-office.ps1; powershell -File start-office.ps1   # restart so the server sees them
 ```
 
-Instead of a fixed list you can leave `AGENT_OFFICE_WORKSPACES` out: then every sub-folder of a **parent folder** is a folder to work in. Pick
-the parent folder in **Pengaturan** (the gear in the header, then "Folder induk", or "Ubah folder induk…" in the Folder menu), or set `AGENT_OFFICE_ROOTS`; until
+Instead of a fixed list you can leave `ALIFGUNADI_OFFICE_WORKSPACES` out: then every sub-folder of a **parent folder** is a folder to work in. Pick
+the parent folder in **Pengaturan** (the gear in the header, then "Folder induk", or "Ubah folder induk…" in the Folder menu), or set `ALIFGUNADI_OFFICE_ROOTS`; until
 you do there is no folder to run in. This checkout itself is never offered. New project folders show up without a restart.
 
 Links to Jira, Figma and Penpot in a prompt can be read by the server as read-only context (set the tokens, see [SECURITY.md](SECURITY.md)); they show as chips under the input and in the Konteks tab.
@@ -173,7 +173,7 @@ Links to Jira, Figma and Penpot in a prompt can be read by the server as read-on
 The task list is kept across restarts (tasks that were open come back as "Terputus"; nothing is run again).
 
 The dock then lists those folders and runners, tasks come from the server, and a card can show the program's output and cancel it.
-`claude` runs read-only (`--permission-mode plan`) unless `AGENT_OFFICE_RUNNER_PERMISSION` says otherwise. Read
+`claude` runs read-only (`--permission-mode plan`) unless `ALIFGUNADI_OFFICE_RUNNER_PERMISSION` says otherwise. Read
 [SECURITY.md](SECURITY.md) first: this is the one feature that runs programs for you.
 
 ## Behavior if the server is not running
@@ -185,7 +185,7 @@ The hook fails silently in a few milliseconds. Claude Code is not affected.
 - Unknown agent types (e.g. `Explore`, `general-purpose`, teammates) get a guest desk automatically (at most 12 at a time).
 
 ## Change port
-Set `AGENT_OFFICE_PORT` in both the server environment and the `env` section of `settings.json`.
+Set `ALIFGUNADI_OFFICE_PORT` in both the server environment and the `env` section of `settings.json`.
 
 ## Auto start
 1. On Claude Code start (recommended): the `SessionStart` hook runs `ensure-server.js`, which starts
@@ -199,18 +199,18 @@ Set `AGENT_OFFICE_PORT` in both the server environment and the `env` section of 
 The server stops 30 seconds after the last session ends (`SessionEnd`).
 Any new session or event within that window cancels the stop. Sessions with no events for 6 hours
 are treated as ended (covers crashed sessions). If the server is down when you submit a prompt,
-`hook.js` starts it again. Disable auto stop with environment variable `AGENT_OFFICE_AUTO_STOP=0`.
+`hook.js` starts it again. Disable auto stop with environment variable `ALIFGUNADI_OFFICE_AUTO_STOP=0`.
 
 ## Logs and health
-Server output is written to `%TEMP%\agent-office.log`. When it exceeds 1 MiB it is moved to `agent-office.log.1`
-the next time the server is started (one old generation is kept). `AGENT_OFFICE_DEBUG=1` adds one line per event
+Server output is written to `%TEMP%\alifgunadi-office.log`. When it exceeds 1 MiB it is moved to `alifgunadi-office.log.1`
+the next time the server is started (one old generation is kept). `ALIFGUNADI_OFFICE_DEBUG=1` adds one line per event
 (names and ids only). `GET /health` returns `{ ok, app, schema, uptime_s, desks, sessions, clients }`.
-`AGENT_OFFICE_DATA_DIR` moves the log and the stop marker somewhere else (the tests use it).
+`ALIFGUNADI_OFFICE_DATA_DIR` moves the log and the stop marker somewhere else (the tests use it).
 
 ## Restart / Stop from the page
 Both are in the gear menu (Pengaturan) in the header, with "Folder induk" for the settings dialog.
 - **Restart**: the server starts a fresh instance (new code) and the page reloads automatically.
 - **Stop**: the server stops and stays stopped (prompts in an open session will not revive it)
   until a new Claude Code session starts or you run `start-office.ps1`.
-  A marker file `%TEMP%\agent-office.stopped` records the manual stop.
+  A marker file `%TEMP%\alifgunadi-office.stopped` records the manual stop.
 - Start cannot be a button: the page itself is served by the server.

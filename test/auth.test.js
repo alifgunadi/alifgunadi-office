@@ -46,8 +46,8 @@ describe('token file', () => {
   });
 
   it('is in the profile of the user (LOCALAPPDATA) unless a file is named', () => {
-    assert.equal(tokenPath({ LOCALAPPDATA: 'C:\\Users\\x\\AppData\\Local' }), path.join('C:\\Users\\x\\AppData\\Local', 'AgentOffice', 'token'));
-    assert.equal(tokenPath({ AGENT_OFFICE_TOKEN_FILE: '/tmp/t', LOCALAPPDATA: 'C:\\x' }), '/tmp/t');
+    assert.equal(tokenPath({ LOCALAPPDATA: 'C:\\Users\\x\\AppData\\Local' }), path.join('C:\\Users\\x\\AppData\\Local', 'AlifGunadiOffice', 'token'));
+    assert.equal(tokenPath({ ALIFGUNADI_OFFICE_TOKEN_FILE: '/tmp/t', LOCALAPPDATA: 'C:\\x' }), '/tmp/t');
   });
 });
 
@@ -59,7 +59,7 @@ describe('session cookie', () => {
     const auth = createAuth(token);
     const r = auth.exchange(token);
     assert.equal(r.ok, true);
-    assert.match(r.cookie, /^agent_office_session=[0-9a-f]{64}; HttpOnly; SameSite=Strict; Path=\/; Max-Age=43200$/);
+    assert.match(r.cookie, /^alifgunadi_office_session=[0-9a-f]{64}; HttpOnly; SameSite=Strict; Path=\/; Max-Age=43200$/);
     assert.ok(!r.cookie.includes(token));
   });
 

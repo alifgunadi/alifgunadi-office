@@ -3,8 +3,8 @@
   Sums Private Working Set (Task Manager "Memory" column) for a process and all of its descendants.
 
 .EXAMPLE
-  # Agent Office desktop app (host + all msedgewebview2.exe children)
-  .\measure-ram.ps1 -Name AgentOffice
+  # AlifGunadi Office desktop app (host + all msedgewebview2.exe children)
+  .\measure-ram.ps1 -Name AlifGunadiOffice
 
 .EXAMPLE
   # Any process tree, 10 samples 2 s apart, JSON output for scripts

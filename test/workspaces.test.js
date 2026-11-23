@@ -9,7 +9,7 @@ const path = require('node:path');
 const { checkFolder, createWorkspaces } = require('../lib/workspaces');
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ao-ws-'));
-const make = (spec, extraEnv = {}) => createWorkspaces({ env: { ...process.env, ...extraEnv, AGENT_OFFICE_WORKSPACES: spec } });
+const make = (spec, extraEnv = {}) => createWorkspaces({ env: { ...process.env, ...extraEnv, ALIFGUNADI_OFFICE_WORKSPACES: spec } });
 
 describe('workspaces', () => {
   it('lists the folders of the environment by id and label only, never a path', () => {

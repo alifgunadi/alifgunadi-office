@@ -38,7 +38,7 @@ module.exports = [
       assert.equal(await val(page, `document.getElementById('dock-sim').hidden`), true);
       assert.equal(await val(page, `document.getElementById('dock-folder-name').textContent`), 'w');
       assert.equal(await val(page, `document.getElementById('dock-runner-name').textContent`), 'custom');
-      assert.equal(await val(page, `document.cookie.includes('agent_office_session')`), false, 'the cookie is HttpOnly: no script can read it');
+      assert.equal(await val(page, `document.cookie.includes('alifgunadi_office_session')`), false, 'the cookie is HttpOnly: no script can read it');
       assert.ok(!(await val(page, `document.documentElement.outerHTML`)).includes(page.token()), 'the token is nowhere in the page');
       await page.waitFor(`Array.isArray(serverState.tasks)`, 5000); // the stream was restarted with the cookie
     },
@@ -111,7 +111,7 @@ module.exports = [
       await page.waitFor(`document.getElementById('settings-status').textContent.includes('dikunci')`);
       assert.equal(await val(page, `document.getElementById('settings-root').disabled`), true);
       assert.match(await val(page, `document.getElementById('settings-status').textContent`), /1 folder tersedia/);
-      assert.match(await val(page, `document.getElementById('settings-source').textContent`), /AGENT_OFFICE_WORKSPACES/);
+      assert.match(await val(page, `document.getElementById('settings-source').textContent`), /ALIFGUNADI_OFFICE_WORKSPACES/);
       assert.ok(!(await val(page, `document.getElementById('settings-dialog').textContent`)).includes('ao-browser-work'), 'no path shown');
       await val(page, `closeSettings(); true`);
     },

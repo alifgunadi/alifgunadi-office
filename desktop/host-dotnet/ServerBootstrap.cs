@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace AgentOffice.Desktop;
+namespace AlifGunadiOffice.Desktop;
 
 /// <summary>Starts the existing Node server through ensure-server.js (same as start-office.ps1) and probes /state.</summary>
 internal static class ServerBootstrap
@@ -56,7 +56,7 @@ internal static class ServerBootstrap
                 RedirectStandardInput = true,
             };
             psi.ArgumentList.Add(config.EnsureServerScript);
-            psi.Environment["AGENT_OFFICE_PORT"] = config.Port.ToString();
+            psi.Environment["ALIFGUNADI_OFFICE_PORT"] = config.Port.ToString();
             using var p = Process.Start(psi);
             if (p is null) return;
             p.StandardInput.Close(); // ensure-server.js reads stdin (hook payload); give it EOF.

@@ -5,7 +5,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
 const T = require('../public/js/tasks');
 
-const send = (store, text, targets, now = 0) => T.enqueue(store, { text, targets, folder: 'agent-office', runner: 'claude' }, now);
+const send = (store, text, targets, now = 0) => T.enqueue(store, { text, targets, folder: 'alifgunadi-office', runner: 'claude' }, now);
 const status = (store, id) => store.tasks.find((t) => t.id === id).status;
 
 describe('tasks: queues', () => {
@@ -200,7 +200,7 @@ describe('tasks: limits and results for a real runner', () => {
 
   it('keeps the workspace id of a task', () => {
     const s = T.createStore();
-    const t = T.enqueue(s, { text: 'a', targets: ['lead-qa'], workspaceId: 'agent-office', runner: 'claude', folder: 'agent-office' }, 0, 3).tasks[0];
-    assert.deepEqual([t.workspaceId, t.runner, t.folder], ['agent-office', 'claude', 'agent-office']);
+    const t = T.enqueue(s, { text: 'a', targets: ['lead-qa'], workspaceId: 'alifgunadi-office', runner: 'claude', folder: 'alifgunadi-office' }, 0, 3).tasks[0];
+    assert.deepEqual([t.workspaceId, t.runner, t.folder], ['alifgunadi-office', 'claude', 'alifgunadi-office']);
   });
 });

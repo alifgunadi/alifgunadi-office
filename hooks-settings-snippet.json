@@ -5,12 +5,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/ensure-server.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/ensure-server.js\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -43,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -65,7 +65,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -76,7 +76,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -87,7 +87,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -98,7 +98,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -109,7 +109,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]
@@ -120,7 +120,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"__AGENT_OFFICE_ROOT__/hook.js\"",
+            "command": "node \"__ALIFGUNADI_OFFICE_ROOT__/hook.js\"",
             "timeout": 5
           }
         ]

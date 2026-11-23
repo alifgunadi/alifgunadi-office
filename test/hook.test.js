@@ -28,7 +28,7 @@ before(async () => {
   });
   port = await freePort();
   await new Promise((resolve) => capture.listen(port, '127.0.0.1', resolve));
-  dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-office-hook-test-'));
+  dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'alifgunadi-office-hook-test-'));
 });
 
 after(() => {
@@ -40,7 +40,7 @@ function runHook(input, targetPort = port) {
   return new Promise((resolve) => {
     const before = received.length;
     const child = spawn(process.execPath, [path.join(ROOT, 'hook.js')], {
-      env: { ...process.env, AGENT_OFFICE_PORT: String(targetPort), AGENT_OFFICE_DATA_DIR: dataDir },
+      env: { ...process.env, ALIFGUNADI_OFFICE_PORT: String(targetPort), ALIFGUNADI_OFFICE_DATA_DIR: dataDir },
       windowsHide: true,
     });
     let stdout = '';
@@ -82,7 +82,7 @@ describe('hook.js never disturbs the host agent', () => {
 
   it('sends the guard header', async () => {
     const r = await runHook(tool({}));
-    assert.equal(r.sent.headers['x-agent-office'], '1');
+    assert.equal(r.sent.headers['x-alifgunadi-office'], '1');
   });
 });
 
@@ -132,12 +132,12 @@ describe('hook.js privacy', () => {
 
 describe('hook.js stop marker', () => {
   it('does not revive the server after a manual Stop', async () => {
-    fs.writeFileSync(path.join(dataDir, 'agent-office.stopped'), 'x');
+    fs.writeFileSync(path.join(dataDir, 'alifgunadi-office.stopped'), 'x');
     const dead = await freePort();
     const r = await runHook(JSON.stringify({ hook_event_name: 'UserPromptSubmit' }), dead);
     assert.equal(r.code, 0);
     await sleep(500);
-    assert.equal(fs.existsSync(path.join(dataDir, 'agent-office.log')), false);
-    fs.rmSync(path.join(dataDir, 'agent-office.stopped'));
+    assert.equal(fs.existsSync(path.join(dataDir, 'alifgunadi-office.log')), false);
+    fs.rmSync(path.join(dataDir, 'alifgunadi-office.stopped'));
   });
 });

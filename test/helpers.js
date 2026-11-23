@@ -53,12 +53,12 @@ function endTree(child) {
 // options.dataDir: reuse a folder (a second server over the files of a first one); the caller removes it. options.prepare(dataDir) runs before the server starts.
 async function startServer(extraEnv = {}, options = {}) {
   const port = await freePort();
-  const dataDir = options.dataDir || fs.mkdtempSync(path.join(os.tmpdir(), 'agent-office-test-'));
+  const dataDir = options.dataDir || fs.mkdtempSync(path.join(os.tmpdir(), 'alifgunadi-office-test-'));
   if (options.prepare) options.prepare(dataDir);
   const child = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
     cwd: ROOT,
     // The token file lives in the throwaway dir too: a test must never create or read the real one in the user's profile.
-    env: { ...process.env, AGENT_OFFICE_PORT: String(port), AGENT_OFFICE_DATA_DIR: dataDir, AGENT_OFFICE_TOKEN_FILE: path.join(dataDir, 'token'), AGENT_OFFICE_SETTINGS_FILE: path.join(dataDir, 'settings.json'), AGENT_OFFICE_HOME: path.join(dataDir, 'no-home'), AGENT_OFFICE_ROOTS: dataDir, AGENT_OFFICE_AUTO_STOP: '0', AGENT_OFFICE_RUNNER: '', AGENT_OFFICE_WORKSPACES: '', ...extraEnv },
+    env: { ...process.env, ALIFGUNADI_OFFICE_PORT: String(port), ALIFGUNADI_OFFICE_DATA_DIR: dataDir, ALIFGUNADI_OFFICE_TOKEN_FILE: path.join(dataDir, 'token'), ALIFGUNADI_OFFICE_SETTINGS_FILE: path.join(dataDir, 'settings.json'), ALIFGUNADI_OFFICE_HOME: path.join(dataDir, 'no-home'), ALIFGUNADI_OFFICE_ROOTS: dataDir, ALIFGUNADI_OFFICE_AUTO_STOP: '0', ALIFGUNADI_OFFICE_RUNNER: '', ALIFGUNADI_OFFICE_WORKSPACES: '', ...extraEnv },
     stdio: 'ignore',
     windowsHide: true,
   });
@@ -69,7 +69,7 @@ async function startServer(extraEnv = {}, options = {}) {
     if (res.status === 200) break;
     await sleep(100);
   }
-  const header = { 'X-Agent-Office': '1' };
+  const header = { 'X-AlifGunadi-Office': '1' };
   return {
     port,
     dataDir,

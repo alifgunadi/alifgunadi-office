@@ -9,16 +9,16 @@ const path = require('node:path');
 const { startServer, sleep } = require('./helpers');
 
 const FAKE = path.join(__dirname, 'fixtures', 'fake-runner.js');
-const GUARD = { 'X-Agent-Office': '1' };
+const GUARD = { 'X-AlifGunadi-Office': '1' };
 const json = (r) => JSON.parse(r.text);
 const tmpDirs = [];
 const tmp = (p) => { const d = fs.mkdtempSync(path.join(os.tmpdir(), p)); tmpDirs.push(d); return d; };
 after(() => { for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true }); });
 
-const env = (work) => ({ AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), AGENT_OFFICE_WORKSPACES: 'w=' + work });
+const env = (work) => ({ ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + work });
 async function login(s) { return (await s.request('POST', '/auth', { body: { token: s.token() }, headers: GUARD })).headers['set-cookie'][0].split(';')[0]; }
 const tasksOf = async (s, c) => json(await s.request('GET', '/tasks', { headers: { Cookie: c } })).tasks;
-const taskFile = (dir) => path.join(dir, 'agent-office-tasks.json');
+const taskFile = (dir) => path.join(dir, 'alifgunadi-office-tasks.json');
 async function until(fn, ms = 8000) { const end = Date.now() + ms; while (Date.now() < end) { const v = await fn(); if (v) return v; await sleep(50); } throw new Error('timed out'); }
 const write = (dir, tasks, extra = {}) => fs.writeFileSync(taskFile(dir), JSON.stringify({ v: 1, nextId: 1, nextBatch: 1, tasks, ...extra }));
 const mk = (n, over = {}) => ({ id: 't' + n, batchId: 'b' + n, deskId: 'lead-qa', text: 'echo ' + n, workspaceId: 'w', runner: 'custom', status: 'done', createdAt: Date.now() - 5000, startedAt: Date.now() - 4000, finishedAt: Date.now() - 3000, exitCode: 0, error: null, ...over });
@@ -75,7 +75,7 @@ describe('a restart', () => {
     const saved = JSON.parse(fs.readFileSync(taskFile(data), 'utf8'));
     assert.deepEqual(saved.tasks.map((t) => t.status), ['cancelled']);
     // the stop marker belongs to the data folder; clean it so it cannot affect anything else
-    try { fs.unlinkSync(path.join(data, 'agent-office.stopped')); } catch { /* none */ }
+    try { fs.unlinkSync(path.join(data, 'alifgunadi-office.stopped')); } catch { /* none */ }
     await a.stop();
   });
 });
@@ -109,7 +109,7 @@ describe('a damaged or hostile file', () => {
   it('a file nobody asked for (runner off) is read too, but tasks are only shown to a logged-in page', async () => {
     const work = tmp('ao-pw-'), data = tmp('ao-pd-');
     write(data, [mk(1, { text: 'a private prompt' })]);
-    const s = await startServer({ AGENT_OFFICE_WORKSPACES: 'w=' + work }, { dataDir: data });
+    const s = await startServer({ ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + work }, { dataDir: data });
     try {
       assert.ok(!(await s.request('GET', '/state')).text.includes('private'));
       const anon = await s.request('GET', '/tasks', { headers: GUARD });

@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then v="${GITHUB_REF_NAME}"; else v="dev-${GITHUB_SHA::7}"; fi
-          echo "name=AgentOffice-${v}-win-x64" >> "$GITHUB_OUTPUT"
+          echo "name=AlifGunadiOffice-${v}-win-x64" >> "$GITHUB_OUTPUT"
           echo "version=${v}" >> "$GITHUB_OUTPUT"
 
       # Self-contained: the person who downloads it does not need to install .NET. Node.js 22+ is still needed (the server runs on it).
@@ -54,14 +54,14 @@ jobs:
           mkdir -p "pkg/${name}/desktop/app"
           cp -R stage/desktop/app/. "pkg/${name}/desktop/app/"
           cat > "pkg/${name}/START-HERE.txt" <<'EOF'
-          Agent Office
+          AlifGunadi Office
           ============
           1. Install Node.js 22 or newer from https://nodejs.org/ (check with: node --version).
-          2. Keep this folder somewhere permanent, for example C:\Tools\AgentOffice. The agent hooks point at it.
+          2. Keep this folder somewhere permanent, for example C:\Tools\AlifGunadiOffice. The agent hooks point at it.
           3. Open PowerShell in this folder and run:
                node install.js
              then restart Claude Code / Antigravity / OpenCode.
-          4. Open the app: double-click desktop\app\AgentOffice.exe
+          4. Open the app: double-click desktop\app\AlifGunadiOffice.exe
              (or run: powershell -ExecutionPolicy Bypass -File desktop\install-shortcut.ps1  for a Desktop and Start Menu icon).
              The browser version also works: powershell -File start-office.ps1
 
@@ -81,13 +81,13 @@ jobs:
         shell: bash
         run: |
           name='${{ steps.meta.outputs.name }}'
-          for f in server.js ensure-server.js install.js hook.js public/index.html desktop/app/AgentOffice.exe START-HERE.txt; do
+          for f in server.js ensure-server.js install.js hook.js public/index.html desktop/app/AlifGunadiOffice.exe START-HERE.txt; do
             test -f "pkg/${name}/${f}" || { echo "missing from package: ${f}"; exit 1; }
           done
           test ! -e "pkg/${name}/project" || { echo "project/ must never be packaged"; exit 1; }
           # the packaged server starts and answers
           cd "pkg/${name}"
-          AGENT_OFFICE_PORT=4398 AGENT_OFFICE_DATA_DIR="$RUNNER_TEMP/aodata" AGENT_OFFICE_AUTO_STOP=0 node server.js &
+          ALIFGUNADI_OFFICE_PORT=4398 ALIFGUNADI_OFFICE_DATA_DIR="$RUNNER_TEMP/aodata" ALIFGUNADI_OFFICE_AUTO_STOP=0 node server.js &
           pid=$!
           ok=0
           for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -117,4 +117,4 @@ jobs:
           Verify the download with the SHA-256 in \`${NAME}.zip.sha256\`.
 
           The desktop app is not code-signed, so Windows SmartScreen may warn on first start (More info, then Run anyway). The source is in this repository."
-          gh release create "$TAG" "${NAME}.zip" "${NAME}.zip.sha256" --title "Agent Office ${TAG}" --notes "$notes" --verify-tag
+          gh release create "$TAG" "${NAME}.zip" "${NAME}.zip.sha256" --title "AlifGunadi Office ${TAG}" --notes "$notes" --verify-tag

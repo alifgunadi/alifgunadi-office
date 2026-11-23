@@ -9,7 +9,7 @@ const path = require('node:path');
 const { startServer } = require('./helpers');
 
 const FAKE = path.join(__dirname, 'fixtures', 'fake-runner.js');
-const GUARD = { 'X-Agent-Office': '1' };
+const GUARD = { 'X-AlifGunadi-Office': '1' };
 const json = (r) => JSON.parse(r.text);
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'ao-fapi-'));
 
@@ -26,8 +26,8 @@ before(async () => {
   // a made-up user folder (the real one holds the temp folder, which would then be off limits): <base>/Users/me with its AppData
   home = path.join(tmp(), 'Users', 'me');
   fs.mkdirSync(path.join(home, 'AppData'), { recursive: true });
-  srv = await startServer({ AGENT_OFFICE_HOME: home, AGENT_OFFICE_ROOTS: root, AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]) });
-  fixedSrv = await startServer({ AGENT_OFFICE_WORKSPACES: 'fx=' + other });
+  srv = await startServer({ ALIFGUNADI_OFFICE_HOME: home, ALIFGUNADI_OFFICE_ROOTS: root, ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]) });
+  fixedSrv = await startServer({ ALIFGUNADI_OFFICE_WORKSPACES: 'fx=' + other });
   cookie = await login(srv);
   fixedCookie = await login(fixedSrv);
 });

@@ -15,7 +15,7 @@ const SETTINGS_ERRORS = {
   not_found: 'Folder tidak ditemukan.',
   not_readable: 'Folder ini tidak bisa dibaca.',
   too_broad: 'Folder ini terlalu luas (drive, folder sistem, atau folder pengguna). Pilih folder yang berisi proyek-proyek Anda.',
-  locked_by_env: 'Daftar folder dikunci oleh server (AGENT_OFFICE_WORKSPACES), jadi tidak bisa diubah dari sini.',
+  locked_by_env: 'Daftar folder dikunci oleh server (ALIFGUNADI_OFFICE_WORKSPACES), jadi tidak bisa diubah dari sini.',
   not_saved: 'Pengaturan tidak bisa disimpan di komputer ini.',
   login_required: 'Masuk dulu lewat peluncur untuk mengubah pengaturan.',
   bad_request: 'Isi folder tidak valid.',
@@ -24,10 +24,10 @@ const SETTINGS_ERRORS = {
 };
 const SOURCE_TEXT = {
   ui: 'Dipilih di halaman ini.',
-  env: 'Dari AGENT_OFFICE_ROOTS di server.',
+  env: 'Dari ALIFGUNADI_OFFICE_ROOTS di server.',
   default: 'Bawaan: folder tempat aplikasi ini berada.',
   none: 'Belum ada folder induk. Pilih satu di sini supaya folder kerja muncul di dock.',
-  fixed: 'Daftar folder tetap dari AGENT_OFFICE_WORKSPACES.',
+  fixed: 'Daftar folder tetap dari ALIFGUNADI_OFFICE_WORKSPACES.',
 };
 
 function setStatusText(text, kind) {

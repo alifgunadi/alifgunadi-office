@@ -118,11 +118,11 @@ describe('scan of the parent folder', () => {
 });
 
 describe('which parent folder is in force', () => {
-  it('the choice on the page beats AGENT_OFFICE_ROOTS, which beats the default', () => {
+  it('the choice on the page beats ALIFGUNADI_OFFICE_ROOTS, which beats the default', () => {
     const dir = tmp(), ui = tmp(), env = tmp(), def = tmp();
     mk(ui, 'from-ui'); mk(env, 'from-env'); mk(def, 'from-default');
     const settings = settingsIn(dir);
-    const w = createWorkspaces({ env: { AGENT_OFFICE_ROOTS: env }, home: NO_HOME, settings, defaultRoot: def, cacheMs: 0 });
+    const w = createWorkspaces({ env: { ALIFGUNADI_OFFICE_ROOTS: env }, home: NO_HOME, settings, defaultRoot: def, cacheMs: 0 });
     assert.equal(w.info().source, 'env');
     assert.deepEqual(w.list().map((x) => x.id), ['from-env']);
     assert.deepEqual(w.setRoot(ui), { ok: true });
@@ -133,17 +133,17 @@ describe('which parent folder is in force', () => {
     assert.equal(createWorkspaces({ env: {}, home: NO_HOME, settings, defaultRoot: def, cacheMs: 0 }).info().source, 'default');
   });
 
-  it('only the first entry of AGENT_OFFICE_ROOTS counts', () => {
+  it('only the first entry of ALIFGUNADI_OFFICE_ROOTS counts', () => {
     const a = tmp(), b = tmp();
     mk(a, 'in-a'); mk(b, 'in-b');
-    assert.deepEqual(make({ env: { AGENT_OFFICE_ROOTS: ` ;${a};${b}` } }).list().map((x) => x.id), ['in-a']);
+    assert.deepEqual(make({ env: { ALIFGUNADI_OFFICE_ROOTS: ` ;${a};${b}` } }).list().map((x) => x.id), ['in-a']);
   });
 
   it('the fixed list wins over everything and cannot be changed from the page', () => {
     const fixedDir = tmp(), root = tmp();
     mk(root, 'scanned');
     const settings = settingsIn(tmp());
-    const w = createWorkspaces({ env: { AGENT_OFFICE_WORKSPACES: `fx=${fixedDir}` }, settings, defaultRoot: root });
+    const w = createWorkspaces({ env: { ALIFGUNADI_OFFICE_WORKSPACES: `fx=${fixedDir}` }, settings, defaultRoot: root });
     assert.deepEqual(w.list(), [{ id: 'fx', label: 'fx' }]);
     assert.equal(w.resolve('scanned'), null);
     assert.equal(w.info().locked, true);
@@ -153,7 +153,7 @@ describe('which parent folder is in force', () => {
   });
 
   it('the fixed list stays in force even if every entry was skipped (the page cannot sneak a folder in)', () => {
-    const w = createWorkspaces({ env: { AGENT_OFFICE_WORKSPACES: 'x=relative' }, settings: settingsIn(tmp()), defaultRoot: tmp() });
+    const w = createWorkspaces({ env: { ALIFGUNADI_OFFICE_WORKSPACES: 'x=relative' }, settings: settingsIn(tmp()), defaultRoot: tmp() });
     assert.deepEqual(w.list(), []);
     assert.equal(w.info().locked, true);
   });
@@ -174,7 +174,7 @@ describe('which parent folder is in force', () => {
     const dir = tmp(), def = tmp(), good = tmp();
     mk(def, 'd'); mk(good, 'g');
     fs.writeFileSync(path.join(dir, 'settings.json'), '{oops');
-    const w = createWorkspaces({ env: { AGENT_OFFICE_ROOTS: def }, home: NO_HOME, settings: settingsIn(dir), defaultRoot: def, cacheMs: 0 });
+    const w = createWorkspaces({ env: { ALIFGUNADI_OFFICE_ROOTS: def }, home: NO_HOME, settings: settingsIn(dir), defaultRoot: def, cacheMs: 0 });
     assert.deepEqual(w.list(), []);
     assert.equal(w.info().error, 'settings_unreadable');
     assert.equal(w.resolve('d'), null);
@@ -196,7 +196,7 @@ describe('which parent folder is in force', () => {
   it('a folder that is excluded (the checkout of this program) is never a workspace, even inside the parent folder', () => {
     const root = tmp();
     mk(root, 'mine', 'app', path.join('app', 'inner'));
-    const w = createWorkspaces({ env: { AGENT_OFFICE_ROOTS: root }, home: NO_HOME, exclude: [path.join(root, 'app')], cacheMs: 0 });
+    const w = createWorkspaces({ env: { ALIFGUNADI_OFFICE_ROOTS: root }, home: NO_HOME, exclude: [path.join(root, 'app')], cacheMs: 0 });
     assert.deepEqual(w.list().map((x) => x.id), ['mine']);
     assert.equal(w.resolve('app'), null);
   });

@@ -16,13 +16,13 @@ after(async () => {
   await srv.stop();
 });
 
-const GUARD = { 'X-Agent-Office': '1' };
+const GUARD = { 'X-AlifGunadi-Office': '1' };
 const post = (body, headers = GUARD) => srv.request('POST', '/event', { body, headers });
 
 describe('identity and normal flow', () => {
   it('/state carries the identity marker', async () => {
     const state = await srv.state();
-    assert.equal(state.app, 'agent-office');
+    assert.equal(state.app, 'alifgunadi-office');
     assert.equal(state.schema, 1);
     assert.ok(state.desks.main);
     assert.ok(Array.isArray(state.log));
@@ -50,7 +50,7 @@ describe('GET /health', () => {
     assert.equal(res.status, 200);
     const body = JSON.parse(res.text);
     assert.equal(body.ok, true);
-    assert.equal(body.app, 'agent-office');
+    assert.equal(body.app, 'alifgunadi-office');
     assert.equal(body.schema, 1);
     assert.equal(typeof body.uptime_s, 'number');
     assert.equal(body.desks, 12);
@@ -62,7 +62,7 @@ describe('GET /health', () => {
 });
 
 describe('POST /event validation', () => {
-  it('requires the X-Agent-Office header', async () => {
+  it('requires the X-AlifGunadi-Office header', async () => {
     assert.equal((await post({ hook_event_name: 'Stop' }, {})).status, 403);
   });
 
@@ -133,8 +133,8 @@ describe('Host, Origin and fetch-metadata checks', () => {
     assert.equal((await srv.request('GET', '/state', { headers: { ...nav, 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty' } })).status, 403, 'fetch');
     assert.equal((await srv.request('GET', '/events', { headers: { ...nav, 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty' } })).status, 403, 'event stream');
     assert.equal((await srv.request('GET', '/', { headers: { ...nav, 'Sec-Fetch-Dest': 'iframe' } })).status, 403, 'embedding in a frame');
-    assert.equal((await srv.request('POST', '/event', { body: {}, headers: { ...nav, 'X-Agent-Office': '1' } })).status, 403, 'a post, even with the right header');
-    assert.equal((await srv.request('POST', '/control/stop', { headers: { ...nav, 'X-Agent-Office': '1' } })).status, 403, 'the control routes');
+    assert.equal((await srv.request('POST', '/event', { body: {}, headers: { ...nav, 'X-AlifGunadi-Office': '1' } })).status, 403, 'a post, even with the right header');
+    assert.equal((await srv.request('POST', '/control/stop', { headers: { ...nav, 'X-AlifGunadi-Office': '1' } })).status, 403, 'the control routes');
     assert.equal((await srv.request('GET', '/', { headers: { ...nav, Origin: 'http://evil.example' } })).status, 403, 'a foreign Origin still counts');
     assert.equal((await srv.request('GET', '/', { headers: { ...nav, Host: 'evil.example' } })).status, 403, 'a foreign Host still counts');
   });
@@ -188,7 +188,7 @@ describe('SSE', () => {
         });
       });
     });
-    assert.match(first, /^data: \{"app":"agent-office","schema":1/);
+    assert.match(first, /^data: \{"app":"alifgunadi-office","schema":1/);
   });
 });
 
@@ -199,7 +199,7 @@ describe('control endpoints', () => {
       assert.equal((await own.request('POST', '/control/stop', { headers: GUARD })).status, 202);
       for (let i = 0; i < 30 && own.exit.code === undefined; i++) await sleep(100);
       assert.equal(own.exit.code, 0);
-      assert.ok(fs.existsSync(path.join(own.dataDir, 'agent-office.stopped')));
+      assert.ok(fs.existsSync(path.join(own.dataDir, 'alifgunadi-office.stopped')));
     } finally {
       await own.stop();
     }

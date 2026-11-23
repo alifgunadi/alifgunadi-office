@@ -10,7 +10,7 @@ const path = require('node:path');
 const { startServer, sleep } = require('./helpers');
 
 const FAKE = path.join(__dirname, 'fixtures', 'fake-runner.js');
-const GUARD = { 'X-Agent-Office': '1' };
+const GUARD = { 'X-AlifGunadi-Office': '1' };
 const UUID = '11111111-2222-3333-4444-555555555555';
 const json = (r) => JSON.parse(r.text);
 
@@ -28,7 +28,7 @@ before(async () => {
   });
   await new Promise((r) => penpot.listen(0, r));
   const port = penpot.address().port;
-  const runner = { AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), AGENT_OFFICE_WORKSPACES: 'w=' + work };
+  const runner = { ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + work };
   srv = await startServer({ ...runner, PENPOT_BASE_URL: 'http://localhost:' + port, PENPOT_ACCESS_TOKEN: 'penpot-secret-token' });
   bare = await startServer({ ...runner, JIRA_EMAIL: '', JIRA_API_TOKEN: '' }); // nothing configured
   cookie = (await srv.request('POST', '/auth', { body: { token: srv.token() }, headers: GUARD })).headers['set-cookie'][0].split(';')[0];

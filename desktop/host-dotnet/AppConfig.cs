@@ -1,6 +1,6 @@
-namespace AgentOffice.Desktop;
+namespace AlifGunadiOffice.Desktop;
 
-/// <summary>Where the Agent Office repo is and which port the server uses.</summary>
+/// <summary>Where the AlifGunadi Office repo is and which port the server uses.</summary>
 internal sealed record AppConfig(string Root, int Port)
 {
     private const int DefaultPort = 4317;
@@ -16,12 +16,12 @@ internal sealed record AppConfig(string Root, int Port)
     {
         try
         {
-            string? file = Environment.GetEnvironmentVariable("AGENT_OFFICE_TOKEN_FILE");
+            string? file = Environment.GetEnvironmentVariable("ALIFGUNADI_OFFICE_TOKEN_FILE");
             if (string.IsNullOrWhiteSpace(file))
             {
                 string? local = Environment.GetEnvironmentVariable("LOCALAPPDATA");
                 if (string.IsNullOrWhiteSpace(local)) return Origin.ToString();
-                file = Path.Combine(local, "AgentOffice", "token");
+                file = Path.Combine(local, "AlifGunadiOffice", "token");
             }
             string token = File.ReadAllText(file).Trim();
             bool valid = token.Length == 64 && token.All(c => c is (>= '0' and <= '9') or (>= 'a' and <= 'f'));
@@ -39,17 +39,17 @@ internal sealed record AppConfig(string Root, int Port)
 
     public static AppConfig Resolve() => new(ResolveRoot(), ResolvePort());
 
-    // Same rule as server.js / hook.js / ensure-server.js: Number(AGENT_OFFICE_PORT) || 4317.
+    // Same rule as server.js / hook.js / ensure-server.js: Number(ALIFGUNADI_OFFICE_PORT) || 4317.
     private static int ResolvePort()
     {
-        string? raw = Environment.GetEnvironmentVariable("AGENT_OFFICE_PORT");
+        string? raw = Environment.GetEnvironmentVariable("ALIFGUNADI_OFFICE_PORT");
         return int.TryParse(raw, out int port) && port is > 0 and < 65536 ? port : DefaultPort;
     }
 
-    // AGENT_OFFICE_ROOT, else the first parent of the exe that contains server.js + ensure-server.js.
+    // ALIFGUNADI_OFFICE_ROOT, else the first parent of the exe that contains server.js + ensure-server.js.
     private static string ResolveRoot()
     {
-        string? fromEnv = Environment.GetEnvironmentVariable("AGENT_OFFICE_ROOT");
+        string? fromEnv = Environment.GetEnvironmentVariable("ALIFGUNADI_OFFICE_ROOT");
         if (!string.IsNullOrWhiteSpace(fromEnv) && IsRepoRoot(fromEnv)) return Path.GetFullPath(fromEnv);
 
         for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)

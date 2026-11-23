@@ -1,7 +1,7 @@
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 
-namespace AgentOffice.Desktop;
+namespace AlifGunadiOffice.Desktop;
 
 /// <summary>
 /// One window, one WebView2, showing the existing page at http://127.0.0.1:PORT/ unchanged.
@@ -29,7 +29,7 @@ internal sealed class MainForm : Form
         _config = config;
         _activateEvent = activateEvent;
 
-        Text = "Agent Office";
+        Text = "AlifGunadi Office";
         BackColor = PageBackground;
         StartPosition = FormStartPosition.Manual;
         AutoScaleMode = AutoScaleMode.None;
@@ -73,8 +73,8 @@ internal sealed class MainForm : Form
         {
             Log.Error("Startup", ex);
             MessageBox.Show(this,
-                "Agent Office could not start the WebView2 runtime.\n\n" + ex.Message,
-                "Agent Office", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                "AlifGunadi Office could not start the WebView2 runtime.\n\n" + ex.Message,
+                "AlifGunadi Office", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Close();
         }
     }
@@ -92,13 +92,13 @@ internal sealed class MainForm : Form
         catch (WebView2RuntimeNotFoundException)
         {
             MessageBox.Show(this,
-                "The Microsoft Edge WebView2 Runtime is not installed.\n\nInstall the Evergreen runtime from https://developer.microsoft.com/microsoft-edge/webview2/ and start Agent Office again.",
-                "Agent Office", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                "The Microsoft Edge WebView2 Runtime is not installed.\n\nInstall the Evergreen runtime from https://developer.microsoft.com/microsoft-edge/webview2/ and start AlifGunadi Office again.",
+                "AlifGunadi Office", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Close();
             throw new OperationCanceledException();
         }
         // The runtime updates itself; a new version is used the next time the app starts.
-        env.NewBrowserVersionAvailable += (_, _) => Log.Info("A newer WebView2 runtime is installed; it is used after restarting Agent Office.");
+        env.NewBrowserVersionAvailable += (_, _) => Log.Info("A newer WebView2 runtime is installed; it is used after restarting AlifGunadi Office.");
         await _webView.EnsureCoreWebView2Async(env);
 
         var core = _webView.CoreWebView2;
@@ -138,10 +138,10 @@ internal sealed class MainForm : Form
     {
         string? message = null;
         if (!_config.HasServerScript)
-            message = $"ensure-server.js was not found in {_config.Root}.\n\nSet the AGENT_OFFICE_ROOT environment variable to the Agent Office folder (the one that contains server.js).";
+            message = $"ensure-server.js was not found in {_config.Root}.\n\nSet the ALIFGUNADI_OFFICE_ROOT environment variable to the AlifGunadi Office folder (the one that contains server.js).";
         else if (!ServerBootstrap.NodeAvailable())
-            message = "Node.js was not found on PATH, so the Agent Office server cannot start.\n\nInstall Node.js 22 or newer from https://nodejs.org/ and start Agent Office again.";
-        if (message is not null) MessageBox.Show(this, message, "Agent Office", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            message = "Node.js was not found on PATH, so the AlifGunadi Office server cannot start.\n\nInstall Node.js 22 or newer from https://nodejs.org/ and start AlifGunadi Office again.";
+        if (message is not null) MessageBox.Show(this, message, "AlifGunadi Office", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
     private void ShowPage()
@@ -157,7 +157,7 @@ internal sealed class MainForm : Form
         Log.Info($"Offline: {reason}");
         _showingPage = false;
         _webView.CoreWebView2?.NavigateToString(
-            "<!doctype html><html><head><title>Agent Office</title></head>" +
+            "<!doctype html><html><head><title>AlifGunadi Office</title></head>" +
             "<body style=\"margin:0;background:#dce2eb;height:100vh\"></body></html>");
         _offlineTimer.Start();
     }

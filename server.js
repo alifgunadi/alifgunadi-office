@@ -1,5 +1,5 @@
 'use strict';
-// Agent Office: local server that turns Claude Code hook events into a live pixel office.
+// AlifGunadi Office: local server that turns Claude Code hook events into a live pixel office.
 // Run: node server.js   (or: bun server.js)   then open http://127.0.0.1:4317
 // The office model lives in lib/office.js; this file is the HTTP and process-lifecycle layer.
 
@@ -25,14 +25,14 @@ const LISTEN_RETRIES = 10;
 const LISTEN_RETRY_MS = 200;
 
 const HOST = '127.0.0.1';
-const PORT = Number(process.env.AGENT_OFFICE_PORT) || 4317;
+const PORT = Number(process.env.ALIFGUNADI_OFFICE_PORT) || 4317;
 const MAX_BODY_BYTES = 64 * 1024;
 const KEEPALIVE_MS = 15000;
 const MAX_SSE_CLIENTS = 16;
-// Auto stop: shut down after the last Claude Code session ends. Set AGENT_OFFICE_AUTO_STOP=0 to disable.
-const AUTO_STOP = process.env.AGENT_OFFICE_AUTO_STOP !== '0';
-// AGENT_OFFICE_DEBUG=1 logs one line per event (names and ids only, never tool input).
-const DEBUG = process.env.AGENT_OFFICE_DEBUG === '1';
+// Auto stop: shut down after the last Claude Code session ends. Set ALIFGUNADI_OFFICE_AUTO_STOP=0 to disable.
+const AUTO_STOP = process.env.ALIFGUNADI_OFFICE_AUTO_STOP !== '0';
+// ALIFGUNADI_OFFICE_DEBUG=1 logs one line per event (names and ids only, never tool input).
+const DEBUG = process.env.ALIFGUNADI_OFFICE_DEBUG === '1';
 const SHUTDOWN_GRACE_MS = 30 * 1000;
 const STALE_CHECK_MS = 5 * 60 * 1000;
 const STALE_DESK_CHECK_MS = 60 * 1000;
@@ -53,7 +53,7 @@ const isAuthed = (req) => auth !== null && auth.isAuthed(req);
 
 const taskStore = Tasks.createStore();
 // The task list survives a restart: what was open then comes back as "interrupted" (lib/taskfile.js).
-const taskFile = createTaskFile({ file: path.join(DATA_DIR, 'agent-office-tasks.json'), store: taskStore });
+const taskFile = createTaskFile({ file: path.join(DATA_DIR, 'alifgunadi-office-tasks.json'), store: taskStore });
 const restoredTasks = taskFile.load();
 if (restoredTasks) console.log('Restored ' + restoredTasks + ' task(s).');
 const runners = buildRunners();
@@ -78,7 +78,7 @@ function takeCheckQuota() {
 }
 
 function sessionView() {
-  return { app: 'agent-office', schema: 1, authed: true, real: realEnabled(), runners: runnersView(runners), workspaces: workspaces.list(), integrations: integrations.providers(), maxConcurrent: MAX_CONCURRENT };
+  return { app: 'alifgunadi-office', schema: 1, authed: true, real: realEnabled(), runners: runnersView(runners), workspaces: workspaces.list(), integrations: integrations.providers(), maxConcurrent: MAX_CONCURRENT };
 }
 
 function cancelShutdown() {
@@ -118,7 +118,7 @@ setInterval(() => office.sweepSessions(), STALE_CHECK_MS).unref();
 setInterval(() => office.sweepDesks(), STALE_DESK_CHECK_MS).unref();
 
 function shutdown(reason) {
-  console.log(`[${new Date().toISOString()}] Agent Office stopped (${reason}).`);
+  console.log(`[${new Date().toISOString()}] AlifGunadi Office stopped (${reason}).`);
   executor.shutdown();
   taskFile.flush();
   server.close();
@@ -278,7 +278,7 @@ function route(req, res) {
   if (req.method === 'POST' && req.url === '/event') {
     // Custom header forces a CORS preflight, which this server never approves,
     // so random web pages in the browser cannot inject fake events.
-    if (req.headers['x-agent-office'] !== '1') return res.writeHead(403).end();
+    if (req.headers['x-alifgunadi-office'] !== '1') return res.writeHead(403).end();
     readBody(req, res, (body) => {
       let evt;
       try {
@@ -302,7 +302,7 @@ function route(req, res) {
 
   if (req.method === 'POST' && (req.url === '/control/stop' || req.url === '/control/restart')) {
     // Same header guard as /event: blocks cross-site requests from other pages in the browser.
-    if (req.headers['x-agent-office'] !== '1') return res.writeHead(403).end();
+    if (req.headers['x-alifgunadi-office'] !== '1') return res.writeHead(403).end();
     // They end every running task, so with the runner on they need the login too.
     if (realEnabled() && !isAuthed(req)) return json(res, 401, { error: 'login_required' });
     const action = req.url === '/control/stop' ? manualStop : restart;
@@ -324,7 +324,7 @@ function handleTaskRoutes(req, res) {
   const url = req.url;
   const isPost = req.method === 'POST';
   if (!(url === '/integrations/resolve' || url === '/auth' || url === '/session' || url === '/prompts' || url === '/tasks' || url === '/workspaces' || url === '/settings' || url === '/settings/check' || url === '/settings/root' || TASK_ID.test(url))) return false;
-  if (isPost && req.headers['x-agent-office'] !== '1') return res.writeHead(403).end(), true;
+  if (isPost && req.headers['x-alifgunadi-office'] !== '1') return res.writeHead(403).end(), true;
 
   if (isPost && url === '/auth') {
     if (auth === null) return json(res, 503, { error: 'login_unavailable' }), true;
@@ -339,7 +339,7 @@ function handleTaskRoutes(req, res) {
   }
 
   if (req.method === 'GET' && url === '/session') {
-    json(res, 200, isAuthed(req) ? sessionView() : { app: 'agent-office', schema: 1, authed: false });
+    json(res, 200, isAuthed(req) ? sessionView() : { app: 'alifgunadi-office', schema: 1, authed: false });
     return true;
   }
 
@@ -460,7 +460,7 @@ server.on('error', (err) => {
     setTimeout(() => server.listen(PORT, HOST), LISTEN_RETRY_MS);
     return;
   }
-  if (err.code === 'EADDRINUSE') console.error(`Port ${PORT} is already in use. Set AGENT_OFFICE_PORT to another port.`);
+  if (err.code === 'EADDRINUSE') console.error(`Port ${PORT} is already in use. Set ALIFGUNADI_OFFICE_PORT to another port.`);
   else console.error(err);
   process.exit(1);
 });
@@ -469,5 +469,5 @@ server.on('error', (err) => {
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => shutdown(sig));
 
 server.listen(PORT, HOST, () => {
-  console.log(`Agent Office running at http://${HOST}:${PORT}`);
+  console.log(`AlifGunadi Office running at http://${HOST}:${PORT}`);
 });

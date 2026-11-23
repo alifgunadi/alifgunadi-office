@@ -1,9 +1,9 @@
-namespace AgentOffice.Desktop;
+namespace AlifGunadiOffice.Desktop;
 
 internal static class Program
 {
-    private const string MutexName = @"Local\AgentOffice.Desktop.SingleInstance";
-    private const string ActivateEventName = @"Local\AgentOffice.Desktop.Activate";
+    private const string MutexName = @"Local\AlifGunadiOffice.Desktop.SingleInstance";
+    private const string ActivateEventName = @"Local\AlifGunadiOffice.Desktop.Activate";
 
     [STAThread]
     private static int Main()

@@ -1,5 +1,5 @@
 'use strict';
-// Antigravity lifecycle hook adapter for Agent Office (127.0.0.1:4317).
+// Antigravity lifecycle hook adapter for AlifGunadi Office (127.0.0.1:4317).
 // Never blocks Antigravity: always outputs valid JSON and exits 0 within 1.5s.
 // Install with `node install.js --target antigravity`; the installer fills in the repo location below.
 
@@ -9,10 +9,10 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 
-const PORT = Number(process.env.AGENT_OFFICE_PORT) || 4317;
-const ROOT = process.env.AGENT_OFFICE_ROOT || '__AGENT_OFFICE_ROOT__';
+const PORT = Number(process.env.ALIFGUNADI_OFFICE_PORT) || 4317;
+const ROOT = process.env.ALIFGUNADI_OFFICE_ROOT || '__ALIFGUNADI_OFFICE_ROOT__';
 const ENSURE_SERVER = `${ROOT}/ensure-server.js`;
-const STATE_FILE = path.join(process.env.AGENT_OFFICE_DATA_DIR || os.tmpdir(), 'agy-agent-office-subagents.json');
+const STATE_FILE = path.join(process.env.ALIFGUNADI_OFFICE_DATA_DIR || os.tmpdir(), 'agy-alifgunadi-office-subagents.json');
 const MAX_STDIN_BYTES = 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 800;
 const HARD_EXIT_MS = 1500;
@@ -70,7 +70,7 @@ function postEvent(event) {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
-          'X-Agent-Office': '1',
+          'X-AlifGunadi-Office': '1',
         },
       },
       (res) => {

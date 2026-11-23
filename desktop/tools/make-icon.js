@@ -19,7 +19,7 @@ const EDGE_CANDIDATES = [
 const edge = EDGE_CANDIDATES.find((p) => fs.existsSync(p));
 if (!edge) throw new Error('msedge.exe not found');
 
-const work = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-office-icon-'));
+const work = fs.mkdtempSync(path.join(os.tmpdir(), 'alifgunadi-office-icon-'));
 const pngs = SIZES.map((size) => {
   const html = path.join(work, `icon-${size}.html`);
   const png = path.join(work, `icon-${size}.png`);

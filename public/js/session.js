@@ -12,7 +12,7 @@ const realMode = () => session.authed && session.real;
 // A small fetch that never throws: { status, data } (status 0 = the server could not be reached).
 async function api(method, url, body) {
   try {
-    const res = await fetch(url, { method, headers: { 'X-Agent-Office': '1', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, body: body === undefined ? undefined : JSON.stringify(body), cache: 'no-store' });
+    const res = await fetch(url, { method, headers: { 'X-AlifGunadi-Office': '1', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, body: body === undefined ? undefined : JSON.stringify(body), cache: 'no-store' });
     let data = null;
     try { data = await res.json(); } catch { /* an empty or non-JSON answer */ }
     return { status: res.status, data };

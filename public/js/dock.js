@@ -14,7 +14,7 @@ const mentionList = document.getElementById('mention-list');
 const folderBtn = document.getElementById('dock-folder');
 const runnerBtn = document.getElementById('dock-runner');
 
-const FOLDERS = ['agent-office', 'design-system', 'api-gateway']; // sample data for the simulation
+const FOLDERS = ['alifgunadi-office', 'design-system', 'api-gateway']; // sample data for the simulation
 const RUNNERS = [
   { id: 'claude', ok: true }, { id: 'opencode', ok: true },
   { id: 'antigravity', ok: false, why: 'CLI tidak ditemukan di PATH' },
@@ -104,7 +104,7 @@ function refreshHint() {
   let text = '', kind = '';
   if (dock.error) { text = dock.error; kind = 'error'; }
   else if (!dock.live) { text = 'Menunggu koneksi server…'; kind = 'error'; }
-  else if (realMode() && !dock.folder) { text = 'Belum ada folder kerja. Pilih folder induk di Pengaturan (ikon gerigi) atau atur AGENT_OFFICE_WORKSPACES di server.'; kind = 'error'; }
+  else if (realMode() && !dock.folder) { text = 'Belum ada folder kerja. Pilih folder induk di Pengaturan (ikon gerigi) atau atur ALIFGUNADI_OFFICE_WORKSPACES di server.'; kind = 'error'; }
   else if (dock.success) { text = dock.success; kind = 'ok'; }
   else {
     const { ids, resolved } = currentTargets();
@@ -421,7 +421,7 @@ function foldersChanged() {
 }
 
 // ---- what survives a reload: the folder, the runner and the text being typed (kept in this browser only, never sent anywhere)
-const DOCK_KEY = 'agent-office.dock';
+const DOCK_KEY = 'alifgunadi-office.dock';
 function loadDockPrefs() {
   try {
     const v = JSON.parse(localStorage.getItem(DOCK_KEY));

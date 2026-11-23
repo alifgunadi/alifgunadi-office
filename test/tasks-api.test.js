@@ -10,7 +10,7 @@ const path = require('node:path');
 const { startServer, sleep } = require('./helpers');
 
 const FAKE = path.join(__dirname, 'fixtures', 'fake-runner.js');
-const GUARD = { 'X-Agent-Office': '1' };
+const GUARD = { 'X-AlifGunadi-Office': '1' };
 const json = (res) => JSON.parse(res.text);
 async function until(fn, ms = 8000) {
   const end = Date.now() + ms;
@@ -21,7 +21,7 @@ async function until(fn, ms = 8000) {
 let srv, off, work, cookie;
 before(async () => {
   work = fs.mkdtempSync(path.join(os.tmpdir(), 'ao-api-work-'));
-  srv = await startServer({ AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), AGENT_OFFICE_WORKSPACES: 'w=' + work });
+  srv = await startServer({ ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + work });
   off = await startServer(); // a server with everything off (the default)
   const r = await srv.request('POST', '/auth', { body: { token: srv.token() }, headers: GUARD });
   cookie = r.headers['set-cookie'][0].split(';')[0];
@@ -63,7 +63,7 @@ describe('login', () => {
   });
 
   it('a restart ends every session: the old cookie is no longer a login', async () => {
-    const s = await startServer({ AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), AGENT_OFFICE_WORKSPACES: 'w=' + work });
+    const s = await startServer({ ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + work });
     try {
       const c = (await s.request('POST', '/auth', { body: { token: s.token() }, headers: GUARD })).headers['set-cookie'][0].split(';')[0];
       assert.equal(json(await s.request('GET', '/session', { headers: { Cookie: c } })).authed, true);
@@ -84,7 +84,7 @@ describe('login', () => {
 
   it('/session tells a visitor nothing but that they are not logged in; a logged-in page sees ids and reasons, never paths', async () => {
     const anon = json(await srv.request('GET', '/session'));
-    assert.deepEqual(anon, { app: 'agent-office', schema: 1, authed: false });
+    assert.deepEqual(anon, { app: 'alifgunadi-office', schema: 1, authed: false });
     const me = json(await srv.request('GET', '/session', { headers: { Cookie: cookie } }));
     assert.equal(me.authed, true);
     assert.equal(me.real, true);
@@ -110,7 +110,7 @@ describe('without a login nothing is readable or runnable', () => {
   });
 
   it('a wrong or token-as-cookie value does not count as a login', async () => {
-    for (const c of ['agent_office_session=' + 'a'.repeat(64), 'agent_office_session=' + srv.token(), 'agent_office_session=']) {
+    for (const c of ['alifgunadi_office_session=' + 'a'.repeat(64), 'alifgunadi_office_session=' + srv.token(), 'alifgunadi_office_session=']) {
       assert.equal((await srv.request('GET', '/tasks', { headers: { Cookie: c } })).status, 401, c.slice(0, 40));
     }
   });
@@ -228,7 +228,7 @@ describe('prompts', () => {
   });
 
   it('is limited to 20 prompts a minute', async () => {
-    const s = await startServer({ AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), AGENT_OFFICE_WORKSPACES: 'w=' + work });
+    const s = await startServer({ ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + work });
     try {
       const c = (await s.request('POST', '/auth', { body: { token: s.token() }, headers: GUARD })).headers['set-cookie'][0].split(';')[0];
       const h = { ...GUARD, Cookie: c };

@@ -46,8 +46,8 @@ async function launch() {
   const tokenFile = path.join(dataDir, 'token');
   const server = spawn(process.execPath, [path.join(ROOT, 'server.js')], {
     env: {
-      ...process.env, AGENT_OFFICE_PORT: String(port), AGENT_OFFICE_DATA_DIR: dataDir, AGENT_OFFICE_AUTO_STOP: '0', AGENT_OFFICE_TOKEN_FILE: tokenFile, AGENT_OFFICE_SETTINGS_FILE: path.join(dataDir, 'settings.json'), AGENT_OFFICE_HOME: path.join(dataDir, 'no-home'), AGENT_OFFICE_ROOTS: dataDir,
-      AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([path.join(ROOT, 'test', 'fixtures', 'fake-runner.js')]), AGENT_OFFICE_WORKSPACES: 'w=' + workDir,
+      ...process.env, ALIFGUNADI_OFFICE_PORT: String(port), ALIFGUNADI_OFFICE_DATA_DIR: dataDir, ALIFGUNADI_OFFICE_AUTO_STOP: '0', ALIFGUNADI_OFFICE_TOKEN_FILE: tokenFile, ALIFGUNADI_OFFICE_SETTINGS_FILE: path.join(dataDir, 'settings.json'), ALIFGUNADI_OFFICE_HOME: path.join(dataDir, 'no-home'), ALIFGUNADI_OFFICE_ROOTS: dataDir,
+      ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([path.join(ROOT, 'test', 'fixtures', 'fake-runner.js')]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + workDir,
     },
     stdio: 'ignore',
   });
@@ -107,7 +107,7 @@ async function launch() {
     expectProblems(pattern) {
       for (let i = problems.length - 1; i >= 0; i--) if (pattern.test(problems[i])) problems.splice(i, 1);
     },
-    post: (body) => fetch(origin + '/event', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Office': '1' }, body: JSON.stringify(body) }),
+    post: (body) => fetch(origin + '/event', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AlifGunadi-Office': '1' }, body: JSON.stringify(body) }),
     async waitFor(expression, ms = 8000) {
       const end = Date.now() + ms;
       while (Date.now() < end) { if (await evaluate(expression)) return true; await sleep(100); }

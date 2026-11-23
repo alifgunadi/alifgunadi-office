@@ -10,13 +10,13 @@ const path = require('node:path');
 const { startServer, sleep } = require('./helpers');
 
 const FAKE = path.join(__dirname, 'fixtures', 'fake-runner.js');
-const GUARD = { 'X-Agent-Office': '1' };
+const GUARD = { 'X-AlifGunadi-Office': '1' };
 const MARK = 'UNIQUE-MARKER-7f3a9c';
 
 let srv, work, cookie;
 before(async () => {
   work = fs.mkdtempSync(path.join(os.tmpdir(), 'ao-priv-'));
-  srv = await startServer({ AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), AGENT_OFFICE_WORKSPACES: 'w=' + work });
+  srv = await startServer({ ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE]), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + work });
   cookie = (await srv.request('POST', '/auth', { body: { token: srv.token() }, headers: GUARD })).headers['set-cookie'][0].split(';')[0];
 });
 after(async () => { await srv.stop(); fs.rmSync(work, { recursive: true, force: true }); });
@@ -48,12 +48,12 @@ describe('what a prompt does not leak', () => {
     assert.ok(!(await srv.request('GET', '/health')).text.includes(MARK), '/health');
     assert.ok(!(await srv.request('GET', '/state')).text.includes(MARK), '/state');
     const anon = await readStream(srv.port, {}, 600);
-    assert.ok(anon.includes('"app":"agent-office"'), 'the anonymous stream worked');
+    assert.ok(anon.includes('"app":"alifgunadi-office"'), 'the anonymous stream worked');
     assert.ok(!anon.includes(MARK), 'anonymous stream');
     assert.ok(!('tasks' in JSON.parse(anon.split('\n').find((l) => l.startsWith('data: ')).slice(6))), 'no tasks key at all');
     const logged = await readStream(srv.port, { Cookie: cookie }, 600);
     assert.ok(logged.includes(MARK), 'a logged-in stream carries the task');
-    const log = path.join(srv.dataDir, 'agent-office.log');
+    const log = path.join(srv.dataDir, 'alifgunadi-office.log');
     if (fs.existsSync(log)) assert.ok(!fs.readFileSync(log, 'utf8').includes(MARK), 'the log');
     // the stand-in program echoed it back, so the output (and only the output endpoint, with a login) holds it
     assert.equal((await srv.request('GET', '/tasks/' + id + '/output', { headers: GUARD })).status, 401);
@@ -75,7 +75,7 @@ describe('what a prompt does not leak', () => {
   it('the real hook.js forwards no prompt, directory, file contents or full command, so none reaches /state', async () => {
     const { spawnSync } = require('node:child_process');
     const payload = { hook_event_name: 'PreToolUse', session_id: 's1', tool_name: 'Bash', tool_input: { command: 'FOO=1 curl https://x.example/' + MARK + ' --data ' + MARK, file_path: 'C:/secret/dir/notes.txt' }, prompt: MARK, cwd: 'C:/secret/dir' };
-    const run = spawnSync(process.execPath, [path.join(__dirname, '..', 'hook.js')], { input: JSON.stringify(payload), env: { ...process.env, AGENT_OFFICE_PORT: String(srv.port), AGENT_OFFICE_DATA_DIR: srv.dataDir }, encoding: 'utf8', timeout: 8000 });
+    const run = spawnSync(process.execPath, [path.join(__dirname, '..', 'hook.js')], { input: JSON.stringify(payload), env: { ...process.env, ALIFGUNADI_OFFICE_PORT: String(srv.port), ALIFGUNADI_OFFICE_DATA_DIR: srv.dataDir }, encoding: 'utf8', timeout: 8000 });
     assert.equal(run.status, 0);
     assert.equal(run.stdout, '');
     await sleep(300);

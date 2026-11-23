@@ -255,7 +255,7 @@ describe('stale desk sweep', () => {
 describe('snapshot', () => {
   it('carries the identity marker and schema version', () => {
     const snap = office.snapshot();
-    assert.equal(snap.app, 'agent-office');
+    assert.equal(snap.app, 'alifgunadi-office');
     assert.equal(snap.schema, 1);
     assert.ok(Array.isArray(snap.log));
   });

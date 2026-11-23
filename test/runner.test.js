@@ -22,7 +22,7 @@ const alive = (pid) => { try { process.kill(pid, 0); return true; } catch { retu
 
 function setup(options = {}) {
   const dir = tmp();
-  const env = { ...process.env, AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE, 'one', 'two words']), AGENT_OFFICE_WORKSPACES: 'w=' + dir };
+  const env = { ...process.env, ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: JSON.stringify([FAKE, 'one', 'two words']), ALIFGUNADI_OFFICE_WORKSPACES: 'w=' + dir };
   const store = Tasks.createStore();
   const changes = [];
   const exec = createExecutor({ store, runners: buildRunners(env), workspaces: createWorkspaces({ env }), onChange: () => changes.push(1), envSource: { ...process.env, ...(options.envSource || {}) }, ...options.exec });
@@ -69,7 +69,7 @@ describe('runner: what is offered', () => {
   it('claude gets fixed arguments; the permission mode is one of four and bypassPermissions or manual are never accepted', () => {
     const dir = tmp();
     fs.writeFileSync(path.join(dir, process.platform === 'win32' ? 'claude.exe' : 'claude'), '');
-    const env = (mode) => ({ PATH: dir, AGENT_OFFICE_RUNNER: 'claude', AGENT_OFFICE_RUNNER_PERMISSION: mode });
+    const env = (mode) => ({ PATH: dir, ALIFGUNADI_OFFICE_RUNNER: 'claude', ALIFGUNADI_OFFICE_RUNNER_PERMISSION: mode });
     const args = (mode) => buildRunners(env(mode)).get('claude').args;
     assert.deepEqual(args(undefined), ['-p', '--output-format', 'text', '--permission-mode', 'plan']);
     assert.deepEqual(args('acceptEdits').slice(-2), ['--permission-mode', 'acceptEdits']);
@@ -79,22 +79,22 @@ describe('runner: what is offered', () => {
   });
 
   it('claude missing from PATH is reported as unavailable with the reason', () => {
-    const r = buildRunners({ PATH: tmp(), AGENT_OFFICE_RUNNER: 'claude' });
+    const r = buildRunners({ PATH: tmp(), ALIFGUNADI_OFFICE_RUNNER: 'claude' });
     assert.deepEqual(runnersView(r)[0], { id: 'claude', ok: false, why: 'CLI tidak ditemukan di PATH' });
   });
 
   it('a custom program needs an absolute path to a file and an array of strings', () => {
-    const base = { AGENT_OFFICE_RUNNER: 'custom' };
-    assert.equal(buildRunners({ ...base, AGENT_OFFICE_RUNNER_CMD: process.execPath }).get('custom').ok, true);
-    assert.equal(buildRunners({ ...base, AGENT_OFFICE_RUNNER_CMD: 'node' }).get('custom').ok, false, 'relative');
-    assert.equal(buildRunners({ ...base, AGENT_OFFICE_RUNNER_CMD: path.join(tmp(), 'missing.exe') }).get('custom').ok, false, 'not a file');
-    assert.equal(buildRunners({ ...base, AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: '{"a":1}' }).get('custom').ok, false, 'not an array');
-    assert.equal(buildRunners({ ...base, AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: '[1]' }).get('custom').ok, false, 'not strings');
-    assert.equal(buildRunners({ ...base, AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: 'nope' }).get('custom').ok, false, 'not JSON');
+    const base = { ALIFGUNADI_OFFICE_RUNNER: 'custom' };
+    assert.equal(buildRunners({ ...base, ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath }).get('custom').ok, true);
+    assert.equal(buildRunners({ ...base, ALIFGUNADI_OFFICE_RUNNER_CMD: 'node' }).get('custom').ok, false, 'relative');
+    assert.equal(buildRunners({ ...base, ALIFGUNADI_OFFICE_RUNNER_CMD: path.join(tmp(), 'missing.exe') }).get('custom').ok, false, 'not a file');
+    assert.equal(buildRunners({ ...base, ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: '{"a":1}' }).get('custom').ok, false, 'not an array');
+    assert.equal(buildRunners({ ...base, ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: '[1]' }).get('custom').ok, false, 'not strings');
+    assert.equal(buildRunners({ ...base, ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: 'nope' }).get('custom').ok, false, 'not JSON');
   });
 
   it('the page sees ids and reasons only: no path, no arguments', () => {
-    const r = buildRunners({ AGENT_OFFICE_RUNNER: 'custom', AGENT_OFFICE_RUNNER_CMD: process.execPath, AGENT_OFFICE_RUNNER_ARGS: '["--secret"]' });
+    const r = buildRunners({ ALIFGUNADI_OFFICE_RUNNER: 'custom', ALIFGUNADI_OFFICE_RUNNER_CMD: process.execPath, ALIFGUNADI_OFFICE_RUNNER_ARGS: '["--secret"]' });
     const text = JSON.stringify(runnersView(r));
     assert.ok(!text.includes(process.execPath) && !text.includes('--secret'));
   });
@@ -102,17 +102,17 @@ describe('runner: what is offered', () => {
 
 describe('runner: the environment of a program', () => {
   it('passes the short list and the Anthropic/Claude variables, never the settings or secrets of the server', () => {
-    const out = buildEnv({ Path: 'p', PATH: 'q', ANTHROPIC_API_KEY: 'k', CLAUDE_CODE_X: '1', AGENT_OFFICE_TOKEN_FILE: 't', AGENT_OFFICE_RUNNER_ENV: 'X', MY_SECRET: 's', AWS_SECRET_ACCESS_KEY: 'a', GITHUB_TOKEN: 'g', USERPROFILE: 'u' });
+    const out = buildEnv({ Path: 'p', PATH: 'q', ANTHROPIC_API_KEY: 'k', CLAUDE_CODE_X: '1', ALIFGUNADI_OFFICE_TOKEN_FILE: 't', ALIFGUNADI_OFFICE_RUNNER_ENV: 'X', MY_SECRET: 's', AWS_SECRET_ACCESS_KEY: 'a', GITHUB_TOKEN: 'g', USERPROFILE: 'u' });
     assert.deepEqual(Object.keys(out).sort(), ['ANTHROPIC_API_KEY', 'CLAUDE_CODE_X', 'PATH', 'Path', 'USERPROFILE']);
   });
 
-  it('the port and data folder of this office are passed (so hooks inside a task reach it), nothing else of AGENT_OFFICE_*', () => {
-    const out = buildEnv({ AGENT_OFFICE_PORT: '4400', AGENT_OFFICE_DATA_DIR: 'D:\\x', AGENT_OFFICE_TOKEN_FILE: 't', AGENT_OFFICE_WORKSPACES: 'w=C:\\', AGENT_OFFICE_RUNNER: 'claude' });
-    assert.deepEqual(Object.keys(out).sort(), ['AGENT_OFFICE_DATA_DIR', 'AGENT_OFFICE_PORT']);
+  it('the port and data folder of this office are passed (so hooks inside a task reach it), nothing else of ALIFGUNADI_OFFICE_*', () => {
+    const out = buildEnv({ ALIFGUNADI_OFFICE_PORT: '4400', ALIFGUNADI_OFFICE_DATA_DIR: 'D:\\x', ALIFGUNADI_OFFICE_TOKEN_FILE: 't', ALIFGUNADI_OFFICE_WORKSPACES: 'w=C:\\', ALIFGUNADI_OFFICE_RUNNER: 'claude' });
+    assert.deepEqual(Object.keys(out).sort(), ['ALIFGUNADI_OFFICE_DATA_DIR', 'ALIFGUNADI_OFFICE_PORT']);
   });
 
-  it('extra names can be allowed, but never an AGENT_OFFICE_* one', () => {
-    assert.deepEqual(Object.keys(buildEnv({ MY_VAR: '1', AGENT_OFFICE_X: '2', OTHER: '3' }, ['MY_VAR', 'AGENT_OFFICE_X'])), ['MY_VAR']);
+  it('extra names can be allowed, but never an ALIFGUNADI_OFFICE_* one', () => {
+    assert.deepEqual(Object.keys(buildEnv({ MY_VAR: '1', ALIFGUNADI_OFFICE_X: '2', OTHER: '3' }, ['MY_VAR', 'ALIFGUNADI_OFFICE_X'])), ['MY_VAR']);
   });
 });
 
@@ -158,12 +158,12 @@ describe('runner: running a task', () => {
   });
 
   it('passes only the allowed environment to the program', async () => {
-    const s = make({ envSource: { MY_SECRET: 's', AGENT_OFFICE_TOKEN_FILE: 'x', ANTHROPIC_API_KEY: 'k', GITHUB_TOKEN: 'g' } });
+    const s = make({ envSource: { MY_SECRET: 's', ALIFGUNADI_OFFICE_TOKEN_FILE: 'x', ANTHROPIC_API_KEY: 'k', GITHUB_TOKEN: 'g' } });
     const [t] = s.send('env');
     await until(() => t.status === 'done');
     const names = JSON.parse(s.exec.output(t.id)).map((n) => n.toUpperCase());
     assert.ok(names.includes('ANTHROPIC_API_KEY'));
-    for (const bad of ['MY_SECRET', 'AGENT_OFFICE_TOKEN_FILE', 'GITHUB_TOKEN']) assert.ok(!names.includes(bad), bad);
+    for (const bad of ['MY_SECRET', 'ALIFGUNADI_OFFICE_TOKEN_FILE', 'GITHUB_TOKEN']) assert.ok(!names.includes(bad), bad);
   });
 
   it('keeps only the last 64 KiB of output', async () => {

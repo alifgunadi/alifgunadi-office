@@ -123,7 +123,7 @@ module.exports = [
       assert.deepEqual([during.label, during.disabled, during.folder, during.readOnly], ['Mengirim…', true, true, true]);
       assert.equal(during.w, w0, 'the button keeps its width');
       await page.waitFor(`!dock.sending`);
-      assert.equal(await hint(page), 'Task dijalankan di agent-office dengan claude (simulasi)');
+      assert.equal(await hint(page), 'Task dijalankan di alifgunadi-office dengan claude (simulasi)');
       assert.equal(await val(page, `dockInput.value`), '');
       assert.equal(await val(page, `taskStore.tasks.length`), 1);
       const d = await val(page, `JSON.stringify(deskMap.get('lead-qa'))`).then(JSON.parse);
@@ -258,7 +258,7 @@ module.exports = [
       await val(page, `document.getElementById('dock-folder').click(); true`);
       const open = JSON.parse(await val(page, `JSON.stringify({ expanded: document.getElementById('dock-folder').getAttribute('aria-expanded'), opts: [...document.querySelectorAll('#folder-list [role=option]')].map((o) => o.textContent + ':' + o.getAttribute('aria-selected') + ':' + (o.getAttribute('aria-disabled') || '')), focus: document.activeElement.id })`));
       assert.equal(open.expanded, 'true');
-      assert.deepEqual(open.opts, ['agent-office:true:', 'design-system:false:', 'api-gateway:false:', 'Ubah folder induk…:false:']);
+      assert.deepEqual(open.opts, ['alifgunadi-office:true:', 'design-system:false:', 'api-gateway:false:', 'Ubah folder induk…:false:']);
       assert.equal(open.focus, 'folder-list');
       await page.key('ArrowDown');
       await page.key('Enter');

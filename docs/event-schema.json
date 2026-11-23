@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "agent-office/event.v1.schema.json",
-  "title": "Agent Office event (envelope v1)",
-  "description": "Body of POST /event on the Agent Office server. Send it with the header X-Agent-Office: 1 to 127.0.0.1:<port>. The server keeps only the properties listed here and silently ignores everything else, so extra fields are harmless but never stored. v and source are optional: a sender that omits them is treated as claude-code, schema v1. Changes to this schema are additive only.",
+  "$id": "alifgunadi-office/event.v1.schema.json",
+  "title": "AlifGunadi Office event (envelope v1)",
+  "description": "Body of POST /event on the AlifGunadi Office server. Send it with the header X-AlifGunadi-Office: 1 to 127.0.0.1:<port>. The server keeps only the properties listed here and silently ignores everything else, so extra fields are harmless but never stored. v and source are optional: a sender that omits them is treated as claude-code, schema v1. Changes to this schema are additive only.",
   "type": "object",
   "required": ["hook_event_name"],
   "properties": {

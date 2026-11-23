@@ -1,12 +1,12 @@
 'use strict';
-// Forwards a Claude Code hook payload to the local Agent Office server.
+// Forwards a Claude Code hook payload to the local AlifGunadi Office server.
 // Design constraints:
 // - Never blocks or fails Claude Code: always exits 0, prints nothing to stdout.
 // - Sends only the minimum fields the office needs (no prompts, file contents, or full commands).
 
 const http = require('node:http');
 
-const PORT = Number(process.env.AGENT_OFFICE_PORT) || 4317;
+const PORT = Number(process.env.ALIFGUNADI_OFFICE_PORT) || 4317;
 const MAX_STDIN_BYTES = 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 800;
 const HARD_EXIT_MS = 1500;
@@ -92,7 +92,7 @@ function forward() {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(body),
-        'X-Agent-Office': '1',
+        'X-AlifGunadi-Office': '1',
       },
     },
     (res) => {

@@ -25,7 +25,7 @@ function showNotice(text) {
 async function sendControl(action) {
   setButtons(false);
   try {
-    const res = await fetch('/control/' + action, { method: 'POST', headers: { 'X-Agent-Office': '1' } });
+    const res = await fetch('/control/' + action, { method: 'POST', headers: { 'X-AlifGunadi-Office': '1' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
   } catch (err) {
     console.error('Control request failed', err);

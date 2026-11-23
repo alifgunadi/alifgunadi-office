@@ -1,5 +1,5 @@
 'use strict';
-// Starts the Agent Office server in the background if it is not already running.
+// Starts the AlifGunadi Office server in the background if it is not already running.
 // Used by the Claude Code SessionStart hook and the optional Windows logon task.
 // Always exits 0 and prints nothing to stdout (SessionStart stdout is added to Claude's context).
 
@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 
-const PORT = Number(process.env.AGENT_OFFICE_PORT) || 4317;
+const PORT = Number(process.env.ALIFGUNADI_OFFICE_PORT) || 4317;
 const PROBE_TIMEOUT_MS = 500;
 const HARD_EXIT_MS = 3000;
 const SERVER_PATH = path.join(__dirname, 'server.js');
@@ -56,7 +56,7 @@ function startServer() {
 function isOffice(body) {
   try {
     const json = JSON.parse(body);
-    return Boolean(json) && (json.app === 'agent-office' || (Boolean(json.desks) && Array.isArray(json.log)));
+    return Boolean(json) && (json.app === 'alifgunadi-office' || (Boolean(json.desks) && Array.isArray(json.log)));
   } catch {
     return false;
   }

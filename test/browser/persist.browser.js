@@ -4,7 +4,7 @@
 const assert = require('node:assert/strict');
 
 const val = (page, expr) => page.evaluate(expr);
-const KEY = 'agent-office.dock';
+const KEY = 'alifgunadi-office.dock';
 const reload = async (page) => { await page.open(page.origin + '/'); await page.waitFor(`typeof dock !== 'undefined' && document.getElementById('conn').textContent === 'live'`); };
 const clear = (page) => val(page, `try { localStorage.removeItem('${KEY}'); } catch (e) {} true`);
 
@@ -52,11 +52,11 @@ module.exports = [
         for (const junk of ['{oops', 'null', '[]', '"x"', JSON.stringify({ folder: 5, runner: {}, draft: [] }), JSON.stringify({ folder: 'gone', runner: 'nope', draft: '' })]) {
           await val(page, `localStorage.setItem('${KEY}', ${JSON.stringify(junk)}); true`);
           await reload(page);
-          assert.equal(await val(page, `dock.folder`), 'agent-office', junk);
+          assert.equal(await val(page, `dock.folder`), 'alifgunadi-office', junk);
           assert.equal(await val(page, `dock.runner`), 'claude', junk);
           assert.equal(await val(page, `dockInput.value`), '', junk);
         }
-        await val(page, `localStorage.setItem('${KEY}', JSON.stringify({ folder: 'agent-office', runner: 'claude', draft: 'x'.repeat(50000) })); true`);
+        await val(page, `localStorage.setItem('${KEY}', JSON.stringify({ folder: 'alifgunadi-office', runner: 'claude', draft: 'x'.repeat(50000) })); true`);
         await reload(page);
         assert.equal(await val(page, `dockInput.value.length`), 4000, 'a draft is never longer than a prompt may be');
       } finally { await clear(page); }
@@ -66,7 +66,7 @@ module.exports = [
     name: 'persistence: a draft is shown as text, never as markup',
     async run(page) {
       try {
-        await val(page, `localStorage.setItem('${KEY}', JSON.stringify({ folder: 'agent-office', runner: 'claude', draft: '<img src=x onerror=window.__pwn=1> @lead-qa' })); true`);
+        await val(page, `localStorage.setItem('${KEY}', JSON.stringify({ folder: 'alifgunadi-office', runner: 'claude', draft: '<img src=x onerror=window.__pwn=1> @lead-qa' })); true`);
         await reload(page);
         assert.equal(await val(page, `window.__pwn`), undefined);
         assert.match(await val(page, `dockInput.value`), /<img src=x/);

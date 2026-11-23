@@ -68,7 +68,7 @@ function hashStr(s) {
 // Reduced motion: teleport between desk and lounge and freeze the canvas animation.
 const motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 // The page can also ask for less motion itself (the menu), on top of the system setting; the choice is remembered on this device.
-const MOTION_KEY = 'agent-office.reduce-motion';
+const MOTION_KEY = 'alifgunadi-office.reduce-motion';
 let userReduce = false;
 try { userReduce = localStorage.getItem(MOTION_KEY) === '1'; } catch { /* storage blocked */ }
 if (userReduce) document.documentElement.classList.add('reduce-motion');

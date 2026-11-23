@@ -16,10 +16,10 @@ let dataDir;
 
 before(async () => {
   capture = await startCapture();
-  dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-office-adapter-test-'));
+  dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'alifgunadi-office-adapter-test-'));
   // Set before the OpenCode adapter is imported: it reads the port once at load.
-  process.env.AGENT_OFFICE_PORT = String(capture.port);
-  process.env.AGENT_OFFICE_ROOT = dataDir; // no ensure-server.js here, so adapters never start a server
+  process.env.ALIFGUNADI_OFFICE_PORT = String(capture.port);
+  process.env.ALIFGUNADI_OFFICE_ROOT = dataDir; // no ensure-server.js here, so adapters never start a server
 });
 
 after(async () => {
@@ -34,7 +34,7 @@ describe('Antigravity adapter', () => {
     return new Promise((resolve) => {
       const before = capture.received.length;
       const child = spawn(process.execPath, [script], {
-        env: { ...process.env, AGENT_OFFICE_PORT: String(capture.port), AGENT_OFFICE_ROOT: dataDir, AGENT_OFFICE_DATA_DIR: dataDir },
+        env: { ...process.env, ALIFGUNADI_OFFICE_PORT: String(capture.port), ALIFGUNADI_OFFICE_ROOT: dataDir, ALIFGUNADI_OFFICE_DATA_DIR: dataDir },
         windowsHide: true,
       });
       let stdout = '';
@@ -94,7 +94,7 @@ describe('OpenCode adapter', () => {
   let cleanup;
 
   before(async () => {
-    const mod = await import(pathToFileURL(path.join(ROOT, 'adapters', 'opencode', 'agent-office.js')).href);
+    const mod = await import(pathToFileURL(path.join(ROOT, 'adapters', 'opencode', 'alifgunadi-office.js')).href);
     plugin = mod.default;
     const queue = [];
     let wake;
@@ -132,7 +132,7 @@ describe('OpenCode adapter', () => {
   const named = (bodies, name) => bodies.find((b) => b.hook_event_name === name || b.tool_name === name);
 
   it('exposes the plugin shape OpenCode loads', () => {
-    assert.equal(plugin.id, 'agent-office');
+    assert.equal(plugin.id, 'alifgunadi-office');
     assert.equal(typeof plugin.setup, 'function');
     assert.equal(typeof cleanup, 'function');
   });
@@ -153,7 +153,7 @@ describe('OpenCode adapter', () => {
   });
 
   it('sends the guard header', async () => {
-    assert.equal(capture.received.at(-1).headers['x-agent-office'], '1');
+    assert.equal(capture.received.at(-1).headers['x-alifgunadi-office'], '1');
   });
 
   it('keeps tool input private: base name, program name, short pattern', async () => {

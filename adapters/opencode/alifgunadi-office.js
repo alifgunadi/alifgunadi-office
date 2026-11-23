@@ -1,17 +1,17 @@
-// Forwards OpenCode V2 events to the local Agent Office server.
+// Forwards OpenCode V2 events to the local AlifGunadi Office server.
 // Read-only bridge: POSTs Claude-Code-shaped events to /event. Never throws, never blocks OpenCode.
 // Install with `node install.js --target opencode`; the installer fills in the repo location below.
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 
-const PORT = Number(process.env.AGENT_OFFICE_PORT) || 4317;
-const ROOT = process.env.AGENT_OFFICE_ROOT || "__AGENT_OFFICE_ROOT__";
+const PORT = Number(process.env.ALIFGUNADI_OFFICE_PORT) || 4317;
+const ROOT = process.env.ALIFGUNADI_OFFICE_ROOT || "__ALIFGUNADI_OFFICE_ROOT__";
 const ENSURE_SERVER = `${ROOT}/ensure-server.js`;
 
 function send(evt) {
   fetch(`http://127.0.0.1:${PORT}/event`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Agent-Office": "1" },
+    headers: { "Content-Type": "application/json", "X-AlifGunadi-Office": "1" },
     body: JSON.stringify({ v: 1, source: "opencode", ...evt }),
     signal: AbortSignal.timeout(800),
   }).catch(() => {});
@@ -43,7 +43,7 @@ function slimInput(input) {
 // ponytail: Tool calls inside a subagent land on the main desk because V2 tool hooks are not mapped to child sessions here.
 // Add a child-session -> agent map when the V2 task event exposes the child session id.
 export default {
-  id: "agent-office",
+  id: "alifgunadi-office",
   setup(ctx) {
     if (typeof ctx?.event?.subscribe !== "function") return;
     try {

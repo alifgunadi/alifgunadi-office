@@ -1,5 +1,5 @@
 'use strict';
-// End-to-end tests for the Agent Office desktop app (desktop/app/AgentOffice.exe).
+// End-to-end tests for the AlifGunadi Office desktop app (desktop/app/AlifGunadiOffice.exe).
 // Runs against an isolated server on TEST_PORT so the real office on 4317 is never stopped.
 // Drives the real WebView2 through the DevTools protocol (no dependencies; Node 22+ for WebSocket).
 //
@@ -13,14 +13,14 @@ const zlib = require('node:zlib');
 const { spawn, execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const APP = path.join(ROOT, 'desktop', 'app', 'AgentOffice.exe');
+const APP = path.join(ROOT, 'desktop', 'app', 'AlifGunadiOffice.exe');
 const TEST_PORT = Number(process.env.TEST_PORT) || 4399;
 const CDP_APP = 9333;
 const CDP_EDGE = 9334;
 const ORIGIN = `http://127.0.0.1:${TEST_PORT}`;
-const MARKER = path.join(os.tmpdir(), 'agent-office.stopped');
-const HOST_LOG = path.join(os.tmpdir(), 'agent-office-desktop.log');
-const WINDOW_JSON = path.join(process.env.LOCALAPPDATA, 'AgentOffice', 'window.json');
+const MARKER = path.join(os.tmpdir(), 'alifgunadi-office.stopped');
+const HOST_LOG = path.join(os.tmpdir(), 'alifgunadi-office-desktop.log');
+const WINDOW_JSON = path.join(process.env.LOCALAPPDATA, 'AlifGunadiOffice', 'window.json');
 const EDGE = path.join(process.env['ProgramFiles(x86)'], 'Microsoft', 'Edge', 'Application', 'msedge.exe');
 const VIEW = { width: 1600, height: 900 };
 
@@ -70,17 +70,17 @@ function listenerPid(port) {
 }
 
 function appPids() {
-  const out = ps(`@(Get-Process -Name AgentOffice -ErrorAction SilentlyContinue | ForEach-Object { $_.Id }) -join ','`);
+  const out = ps(`@(Get-Process -Name AlifGunadiOffice -ErrorAction SilentlyContinue | ForEach-Object { $_.Id }) -join ','`);
   return out ? out.split(',').map(Number) : [];
 }
 
 function killAllApps() {
-  ps(`Get-Process -Name AgentOffice -ErrorAction SilentlyContinue | Stop-Process -Force`);
+  ps(`Get-Process -Name AlifGunadiOffice -ErrorAction SilentlyContinue | Stop-Process -Force`);
 }
 
 function ensureServer() {
   execFileSync(process.execPath, [path.join(ROOT, 'ensure-server.js')], {
-    env: { ...process.env, AGENT_OFFICE_PORT: String(TEST_PORT) },
+    env: { ...process.env, ALIFGUNADI_OFFICE_PORT: String(TEST_PORT) },
     input: '',
     stdio: ['pipe', 'ignore', 'ignore'],
   });
@@ -97,7 +97,7 @@ function launchApp(extraEnv = {}) {
     stdio: 'ignore',
     env: {
       ...process.env,
-      AGENT_OFFICE_PORT: String(TEST_PORT),
+      ALIFGUNADI_OFFICE_PORT: String(TEST_PORT),
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${CDP_APP} ${process.env.APP_EXTRA_ARGS || ''}`.trim(),
       ...extraEnv,
     },
@@ -108,14 +108,14 @@ function launchApp(extraEnv = {}) {
 
 const WIN32 = `
 Add-Type -Namespace W -Name U -MemberDefinition '[DllImport("user32.dll")] public static extern bool ShowWindow(System.IntPtr h, int c); [DllImport("user32.dll")] public static extern bool IsIconic(System.IntPtr h);' -ErrorAction SilentlyContinue;
-$p = Get-Process -Name AgentOffice | Select-Object -First 1;`;
+$p = Get-Process -Name AlifGunadiOffice | Select-Object -First 1;`;
 
 function showWindow(cmd) {
   ps(`${WIN32} [W.U]::ShowWindow($p.MainWindowHandle, ${cmd}) | Out-Null`);
 }
 
 function appWindowTitle() {
-  return ps(`(Get-Process -Name AgentOffice | Select-Object -First 1).MainWindowTitle`);
+  return ps(`(Get-Process -Name AlifGunadiOffice | Select-Object -First 1).MainWindowTitle`);
 }
 
 function measureRam(pid, samples = 5) {
@@ -304,7 +304,7 @@ async function main() {
   let cdp;
   let appPid = 0;
   let edgeProc;
-  const edgeProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-office-edge-'));
+  const edgeProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'alifgunadi-office-edge-'));
 
   try {
     await test('T01 cold start: app starts the server and shows the office', async () => {
@@ -341,7 +341,7 @@ async function main() {
 
     await test('T03 hooks still drive the office (POST /event -> desk status)', async () => {
       const post = (body) => fetch(`${ORIGIN}/event`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Agent-Office': '1' }, body: JSON.stringify(body),
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-AlifGunadi-Office': '1' }, body: JSON.stringify(body),
       });
       await post({ hook_event_name: 'SessionStart', session_id: 'desktop-test' });
       await post({ hook_event_name: 'SubagentStart', session_id: 'desktop-test', agent_id: 'qa-1', agent_type: 'lead-qa' });
@@ -350,7 +350,7 @@ async function main() {
       const after = await waitFor(() => cdp.eval(`(deskMap.get('lead-qa') || {}).status`).then((s) => (s !== working ? s : null)), 5000, 'lead-qa changes after stop');
       const forbidden = await httpStatus(`${ORIGIN}/event`, { method: 'POST', body: '{}' });
       assert(forbidden === 403, `event without header returned ${forbidden}`);
-      return `lead-qa: ${working} -> ${after}; request without X-Agent-Office header -> 403`;
+      return `lead-qa: ${working} -> ${after}; request without X-AlifGunadi-Office header -> 403`;
     });
 
     await test('T04 navigation outside the office is blocked', async () => {
@@ -364,7 +364,7 @@ async function main() {
 
     await test('T05 single instance: second launch focuses the open window and exits', async () => {
       const before = appPids();
-      const second = spawn(APP, [], { env: { ...process.env, AGENT_OFFICE_PORT: String(TEST_PORT) }, stdio: 'ignore' });
+      const second = spawn(APP, [], { env: { ...process.env, ALIFGUNADI_OFFICE_PORT: String(TEST_PORT) }, stdio: 'ignore' });
       const code = await new Promise((resolve) => second.on('exit', resolve));
       await sleep(500);
       const after = appPids();
@@ -472,7 +472,7 @@ async function main() {
 
     await test('T12 close window: app exits, server keeps running, bounds saved', async () => {
       cdp.close();
-      ps(`(Get-Process -Name AgentOffice | Select-Object -First 1).CloseMainWindow() | Out-Null`);
+      ps(`(Get-Process -Name AlifGunadiOffice | Select-Object -First 1).CloseMainWindow() | Out-Null`);
       await waitFor(() => appPids().length === 0, 8000, 'app exited');
       assert(await serverUp(), 'server stopped with the window');
       assert(fs.existsSync(WINDOW_JSON), 'window.json not written');
@@ -485,7 +485,7 @@ async function main() {
       cdp = await Cdp.connect(CDP_APP, ORIGIN);
       await watchPage(cdp, 'app2');
       await waitFor(() => cdp.eval(`document.getElementById('conn').textContent === 'live'`), 15000, 'live');
-      const rect = ps(`Add-Type -Namespace W2 -Name U -MemberDefinition '[DllImport("user32.dll")] public static extern System.IntPtr SetThreadDpiAwarenessContext(System.IntPtr c); [DllImport("user32.dll")] public static extern bool GetWindowRect(System.IntPtr h, out RECT r); public struct RECT { public int L, T, R, B; }'; $p = Get-Process -Name AgentOffice | Select-Object -First 1; [W2.U]::SetThreadDpiAwarenessContext([System.IntPtr]-4) | Out-Null; $r = New-Object W2.U+RECT; [W2.U]::GetWindowRect($p.MainWindowHandle, [ref]$r) | Out-Null; "$($r.L),$($r.T),$($r.R - $r.L),$($r.B - $r.T)"`).split(',').map(Number);
+      const rect = ps(`Add-Type -Namespace W2 -Name U -MemberDefinition '[DllImport("user32.dll")] public static extern System.IntPtr SetThreadDpiAwarenessContext(System.IntPtr c); [DllImport("user32.dll")] public static extern bool GetWindowRect(System.IntPtr h, out RECT r); public struct RECT { public int L, T, R, B; }'; $p = Get-Process -Name AlifGunadiOffice | Select-Object -First 1; [W2.U]::SetThreadDpiAwarenessContext([System.IntPtr]-4) | Out-Null; $r = New-Object W2.U+RECT; [W2.U]::GetWindowRect($p.MainWindowHandle, [ref]$r) | Out-Null; "$($r.L),$($r.T),$($r.R - $r.L),$($r.B - $r.T)"`).split(',').map(Number);
       assert(rect[0] === saved.X && rect[1] === saved.Y && rect[2] === saved.Width && rect[3] === saved.Height,
         `window ${rect} vs saved ${saved.X},${saved.Y},${saved.Width},${saved.Height}`);
       return `restored at ${rect.join(',')}`;

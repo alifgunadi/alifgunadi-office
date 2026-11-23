@@ -2,8 +2,8 @@
 
 // ---------- camera: turn, zoom, walls, the control card, pan and the minimap ----------
 
-const CAMERA_KEY = 'agent-office.camera';
-const CAMERA_MIN_KEY = 'agent-office.camera.minimized';
+const CAMERA_KEY = 'alifgunadi-office.camera';
+const CAMERA_MIN_KEY = 'alifgunadi-office.camera.minimized';
 const ZOOMS = [0.8, 1, 1.3];
 const WALL_MODES = ['up', 'cut', 'down'];
 const WALL_LABELS = { up: 'Naik', cut: 'Potong', down: 'Turun' };

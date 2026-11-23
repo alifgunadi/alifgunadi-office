@@ -8,7 +8,7 @@ const { rotateIfLarge } = require('../lib/logfile');
 
 let dir;
 beforeEach(() => {
-  dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-office-log-test-'));
+  dir = fs.mkdtempSync(path.join(os.tmpdir(), 'alifgunadi-office-log-test-'));
 });
 afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
 

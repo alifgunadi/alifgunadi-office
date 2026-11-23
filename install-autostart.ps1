@@ -1,5 +1,5 @@
-# Optional: start Agent Office automatically when you log in to Windows.
-# Registers a per-user scheduled task "AgentOffice" that runs ensure-server.js at logon.
+# Optional: start AlifGunadi Office automatically when you log in to Windows.
+# Registers a per-user scheduled task "AlifGunadiOffice" that runs ensure-server.js at logon.
 # Remove it with uninstall-autostart.ps1.
 $ErrorActionPreference = "Stop"
 
@@ -10,8 +10,8 @@ $action = New-ScheduledTaskAction -Execute $node -Argument "`"$script`"" -Workin
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
 
-Register-ScheduledTask -TaskName "AgentOffice" -Action $action -Trigger $trigger -Settings $settings `
-  -Description "Starts the Agent Office server (http://127.0.0.1:4317) at logon." -Force | Out-Null
+Register-ScheduledTask -TaskName "AlifGunadiOffice" -Action $action -Trigger $trigger -Settings $settings `
+  -Description "Starts the AlifGunadi Office server (http://127.0.0.1:4317) at logon." -Force | Out-Null
 
-Write-Host "Scheduled task 'AgentOffice' registered. It runs at your next logon." -ForegroundColor Green
-Write-Host "Test it now with: Start-ScheduledTask -TaskName AgentOffice" -ForegroundColor Yellow
+Write-Host "Scheduled task 'AlifGunadiOffice' registered. It runs at your next logon." -ForegroundColor Green
+Write-Host "Test it now with: Start-ScheduledTask -TaskName AlifGunadiOffice" -ForegroundColor Yellow

@@ -90,12 +90,12 @@ module.exports = [
   {
     name: 'camera: bad saved values fall back to the defaults',
     async run(page) {
-      await val(page, `localStorage.setItem('agent-office.camera', '{"rot":9,"zoom":2,"walls":"x"}'); true`);
+      await val(page, `localStorage.setItem('alifgunadi-office.camera', '{"rot":9,"zoom":2,"walls":"x"}'); true`);
       await page.evaluate('location.reload(); true');
       await page.sleep(1500);
       await page.waitFor(`document.getElementById('conn') && document.getElementById('conn').textContent === 'live'`, 15000);
       assert.equal(await readout(page), '0° · 100%');
-      await val(page, `localStorage.removeItem('agent-office.camera'); true`);
+      await val(page, `localStorage.removeItem('alifgunadi-office.camera'); true`);
     },
   },
   {
