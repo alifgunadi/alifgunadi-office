@@ -1,6 +1,6 @@
 {
   "name": "alifgunadi-office",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "description": "Live pixel-art office that visualizes Claude Code, Antigravity and OpenCode agents.",
   "license": "UNLICENSED",
