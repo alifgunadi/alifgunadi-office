@@ -18,6 +18,7 @@ const { createWorkspaces } = require('./lib/workspaces');
 const { createSettings } = require('./lib/settings');
 const { createIntegrations, contextText } = require('./lib/integrations');
 const { buildRunners, runnersView, createExecutor, MAX_CONCURRENT } = require('./lib/runner');
+const { resolveNetwork } = require('./lib/network');
 const Tasks = require('./public/js/tasks');
 const Mentions = require('./public/js/mentions');
 
@@ -36,8 +37,11 @@ const DEBUG = process.env.ALIFGUNADI_OFFICE_DEBUG === '1';
 const SHUTDOWN_GRACE_MS = 30 * 1000;
 const STALE_CHECK_MS = 5 * 60 * 1000;
 const STALE_DESK_CHECK_MS = 60 * 1000;
-const ALLOWED_HOSTS = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`]);
-const ALLOWED_ORIGINS = new Set([`http://127.0.0.1:${PORT}`, `http://localhost:${PORT}`]);
+// Always this computer; Tailscale addresses and host names only when ALIFGUNADI_OFFICE_LISTEN / _ALLOWED_HOSTS ask for them (lib/network.js).
+const NETWORK = resolveNetwork(process.env, PORT);
+const ALLOWED_HOSTS = NETWORK.hosts;
+const ALLOWED_ORIGINS = NETWORK.origins;
+const extraServers = []; // { address, server }: filled in below where the request handler exists; closed on stop and restart
 
 const MAX_PROMPT_CHARS = 4000;
 const PROMPTS_PER_MINUTE = 20;
@@ -122,6 +126,7 @@ function shutdown(reason) {
   executor.shutdown();
   taskFile.flush();
   server.close();
+  for (const { server: extra } of extraServers) extra.close();
   for (const res of clients.keys()) res.end();
   setTimeout(() => process.exit(0), 100);
 }
@@ -141,6 +146,7 @@ function restart() {
   executor.shutdown();
   taskFile.flush();
   server.close();
+  for (const { server: extra } of extraServers) extra.close();
   let out = 'ignore';
   rotateIfLarge(LOG_PATH);
   try {
@@ -441,7 +447,7 @@ function handleTaskRoutes(req, res) {
   return false;
 }
 
-const server = http.createServer((req, res) => {
+function handleRequest(req, res) {
   // A bug while handling one request must never take the whole server down.
   try {
     applyBaseHeaders(res);
@@ -451,7 +457,25 @@ const server = http.createServer((req, res) => {
     if (!res.headersSent) res.writeHead(500);
     res.end();
   }
-});
+}
+
+const server = http.createServer(handleRequest);
+
+// Tailscale addresses asked for in ALIFGUNADI_OFFICE_LISTEN: the same handler on more sockets. They are optional, so a
+// failure here (Tailscale not running yet, address not assigned) is reported and never stops the loopback server.
+for (const problem of NETWORK.problems) console.error(problem);
+for (const address of NETWORK.listen) {
+  const extra = http.createServer(handleRequest);
+  let attempts = 0;
+  extra.on('error', (err) => {
+    if (err.code === 'EADDRINUSE' && ++attempts < LISTEN_RETRIES) {
+      setTimeout(() => extra.listen(PORT, address), LISTEN_RETRY_MS);
+      return;
+    }
+    console.error(`Could not listen on ${address}:${PORT} (${err.code || err.message}). Is Tailscale running? Still serving ${HOST}.`);
+  });
+  extraServers.push({ address, server: extra });
+}
 
 let listenAttempts = 0;
 server.on('error', (err) => {
@@ -470,4 +494,7 @@ for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => shutdown(sig));
 
 server.listen(PORT, HOST, () => {
   console.log(`AlifGunadi Office running at http://${HOST}:${PORT}`);
+  for (const { address, server: extra } of extraServers) {
+    extra.listen(PORT, address, () => console.log(`Also reachable over Tailscale at http://${address}:${PORT}`));
+  }
 });

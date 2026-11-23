@@ -176,6 +176,28 @@ The dock then lists those folders and runners, tasks come from the server, and a
 `claude` runs read-only (`--permission-mode plan`) unless `ALIFGUNADI_OFFICE_RUNNER_PERMISSION` says otherwise. Read
 [SECURITY.md](SECURITY.md) first: this is the one feature that runs programs for you.
 
+## Reaching the office from your phone (Tailscale)
+By default the office answers only on this computer. To open it from a phone or tablet, use [Tailscale](https://tailscale.com/): the
+devices on your tailnet reach each other over an encrypted link and nothing is opened to the Wi-Fi or the internet.
+
+1. Install Tailscale on the PC and on the phone and sign in with the same account (Windows: the tray icon, "Log in").
+2. On the PC find its Tailscale address, which starts with `100.`: `tailscale ip -4`.
+3. Tell the server to listen on it, then restart the office. Set the variable in the server's environment, for example as a Windows
+   user variable, or in `$env:` before `start-office.ps1`:
+
+   ```powershell
+   $env:ALIFGUNADI_OFFICE_LISTEN = "100.101.102.103"                       # the address from step 2
+   $env:ALIFGUNADI_OFFICE_ALLOWED_HOSTS = "my-pc.tail1234.ts.net"          # optional: the MagicDNS name, if you want to type a name
+   powershell -File stop-office.ps1; powershell -File start-office.ps1
+   ```
+
+4. On the phone (Safari or Chrome, Tailscale switched on) open `http://100.101.102.103:4317` or `http://my-pc.tail1234.ts.net:4317`.
+
+Only Tailscale addresses (100.64.0.0/10) are accepted; anything else is ignored with a message in the log. If Tailscale is not
+running when the office starts, the office still starts on this computer and logs that it could not listen on the address. Read the
+Tailscale part of [SECURITY.md](SECURITY.md) first: the viewer has no login, so the office is open to every device on your tailnet.
+Running agents from the phone needs the token; see "Starting tasks from the page".
+
 ## Behavior if the server is not running
 The hook fails silently in a few milliseconds. Claude Code is not affected.
 

@@ -1,6 +1,7 @@
 # Security
 
-AlifGunadi Office is a local tool: the server listens on `127.0.0.1` only and keeps everything in memory.
+AlifGunadi Office is a local tool: the server listens on `127.0.0.1` only and keeps everything in memory. The one opt-in exception is
+Tailscale (see [Reaching the office from your phone](README.md#reaching-the-office-from-your-phone-tailscale)).
 
 ## Reporting a problem
 
@@ -120,7 +121,12 @@ than show activity, so it is **off by default** and strict when on.
   process on this machine can post events or read the state, and the `X-AlifGunadi-Office` header is not a secret. Starting agents is the
   part that is protected (above). Another process **of your own account** can read your token file, so it can log in too: the token
   protects against other accounts and other web pages, not against code already running as you. Do not expose the port beyond
-  `127.0.0.1`.
+  `127.0.0.1`, with one exception: `ALIFGUNADI_OFFICE_LISTEN` accepts **Tailscale addresses only** (100.64.0.0/10). A wildcard, a LAN
+  address or any other value is refused and reported, so the office cannot be opened to the whole Wi-Fi by a typo. Over the tailnet
+  the same rules apply as on this computer: the viewer has no login, so every device and person on your tailnet can read the state and
+  post events. Keep the tailnet to your own devices (no shared nodes, no subnet routers pointing at the port, no Tailscale Funnel).
+  Traffic between tailnet devices is encrypted by Tailscale; the office itself still speaks plain HTTP on that link. `/auth` and the
+  token work the same way, so type the token on a phone only if you accept that device holding a 12-hour session.
 - **Someone else holding the port.** The launchers hand the token to whatever answers on the office's port. If another account (or a
   rogue process) started a server on that port before yours, it serves the page and so can read the token from the address the
   launcher opened. A proof such as an HMAC would not help, because the page that computes it comes from the same server. Keep the port
