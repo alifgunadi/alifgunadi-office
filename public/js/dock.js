@@ -98,6 +98,15 @@ function currentTargets() {
   return { ids: [...new Set([...dock.chips, ...r.targets])], resolved: r };
 }
 
+// A prompt with no @mention and no chosen target is Alif Gunadi's own: he (the main desk) is the default one who does the work.
+// The server applies the same rule to a text without a known @mention, so nothing is added to the text for him.
+const DEFAULT_DESK = OfficeRoles.MAIN_DESK;
+function effectiveTargets() {
+  const { ids, resolved } = currentTargets();
+  if (ids.length || !dockInput.value.trim()) return { ids, resolved, byDefault: false };
+  return { ids: [DEFAULT_DESK], resolved, byDefault: true };
+}
+
 // ---- the line under the input: an error, the connection, a success, or what will happen
 
 function refreshHint() {
@@ -107,8 +116,8 @@ function refreshHint() {
   else if (realMode() && !dock.folder) { text = 'Belum ada folder kerja. Pilih folder induk di Pengaturan (ikon gerigi) atau atur ALIFGUNADI_OFFICE_WORKSPACES di server.'; kind = 'error'; }
   else if (dock.success) { text = dock.success; kind = 'ok'; }
   else {
-    const { ids, resolved } = currentTargets();
-    text = OfficeMentions.describe(ids, resolved, nameOf);
+    const { ids, resolved, byDefault } = effectiveTargets();
+    text = byDefault ? 'Tanpa @mention: dikerjakan oleh ' + nameOf(DEFAULT_DESK) + ' (default)' : OfficeMentions.describe(ids, resolved, nameOf);
     if (resolved.unknown.length) text += (text ? ' · ' : '') + '@' + resolved.unknown.join(', @') + ' tidak dikenal (dikirim sebagai teks biasa)';
     kind = 'preview';
   }
@@ -263,7 +272,8 @@ function hideConfirm() {
 // In real mode a send is a round trip to the server. The server decides the targets from the text, so a target chosen as a chip but
 // not typed is added to the text as an @mention.
 async function sendReal(text, ids, resolved) {
-  const missing = ids.filter((id) => !resolved.targets.includes(id));
+  // The main desk is never written into the text as an @mention: the server does not read @main, it defaults to him by itself.
+  const missing = ids.filter((id) => id !== DEFAULT_DESK && !resolved.targets.includes(id));
   const body = { text: (missing.length ? missing.map((id) => '@' + id).join(' ') + ' ' : '') + text, workspaceId: dock.folder, runner: dock.runner };
   const urls = typeof contextUrlsToSend === 'function' ? contextUrlsToSend() : [];
   if (urls.length) body.urls = urls;
@@ -292,8 +302,7 @@ function trySend(confirmed) {
   if (dock.sending || !dock.live) return;
   const text = dockInput.value.trim();
   if (!text) return setError('Tulis instruksi terlebih dahulu sebelum mengirim.');
-  const { ids, resolved } = currentTargets();
-  if (!ids.length) return setError('Pilih minimal 1 target: @agent atau @divisi.');
+  const { ids, resolved } = effectiveTargets(); // no target at all means Alif Gunadi, so there is no "pick a target" error any more
   if (resolved.everyone && !confirmed) return showConfirm(ids.length);
   dockConfirm.hidden = true;
   dock.sending = true;

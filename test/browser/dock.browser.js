@@ -98,7 +98,7 @@ module.exports = [
     },
   },
   {
-    name: 'dock: sending nothing, or sending with no target, is refused with a message and the field marked invalid',
+    name: 'dock: sending nothing is refused with a message and the field marked invalid',
     async run(page) {
       await focusInput(page);
       await ctrlEnter(page);
@@ -107,9 +107,30 @@ module.exports = [
       assert.equal(await val(page, `document.getElementById('dock-hint').dataset.kind`), 'error');
       await page.type('cek login');
       assert.equal(await val(page, `dockInput.getAttribute('aria-invalid')`), 'false', 'typing clears the error');
+      assert.equal(await val(page, `taskStore.tasks.length`), 0, 'nothing was sent while the text was empty');
+    },
+  },
+  {
+    name: 'dock: a prompt without @mention or chip is Alif Gunadi\'s own: the hint says so, the task goes to his desk and the text is not changed',
+    async run(page) {
+      await focusInput(page);
+      assert.equal(await hint(page), '', 'no hint while there is no text');
+      await page.type('cek halaman login');
+      assert.equal(await hint(page), 'Tanpa @mention: dikerjakan oleh Alif Gunadi (default)');
       await ctrlEnter(page);
-      assert.equal(await hint(page), 'Pilih minimal 1 target: @agent atau @divisi.');
-      assert.equal(await val(page, `taskStore.tasks.length`), 0);
+      await page.waitFor(`!dock.sending`);
+      assert.equal(await val(page, `taskStore.tasks.length`), 1);
+      const t = await val(page, `JSON.stringify({ deskId: taskStore.tasks[0].deskId, text: taskStore.tasks[0].text })`).then(JSON.parse);
+      assert.deepEqual(t, { deskId: 'main', text: 'cek halaman login' });
+      assert.equal(await val(page, `dockInput.value`), '');
+      const d = await val(page, `JSON.stringify(deskMap.get('main'))`).then(JSON.parse);
+      assert.equal(d.status, 'working');
+      // a text with an @mention (or an unknown @word only) behaves as before: a mention picks its own targets
+      await page.type('@lead-qa cek lagi');
+      assert.equal(await hint(page), 'Akan dikirim ke Lead QA');
+      await val(page, `dockInput.value = ''; dockInput.dispatchEvent(new Event('input')); true`);
+      await page.type('halo @nobody');
+      assert.match(await hint(page), /^Tanpa @mention: dikerjakan oleh Alif Gunadi \(default\) · @nobody tidak dikenal/);
     },
   },
   {

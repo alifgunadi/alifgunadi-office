@@ -7,7 +7,8 @@
   'use strict';
 
   const MAIN = roles.MAIN_DESK;
-  // AlifGunadi (the main desk) is the person writing the prompt, so he is never a target.
+  // AlifGunadi (the main desk) cannot be @mentioned, so he is never in `targets`. He is the default instead: a prompt with no
+  // target at all is his own (the dock and the server both apply that, see effectiveTargets in dock.js and POST /prompts).
   const AGENT_IDS = roles.ROLE_IDS.filter((id) => id !== MAIN);
   const DIVISION_LABELS = { product: 'Product', eng: 'Engineering', qa: 'QA' };
   const DIVISION_ALIASES = { product: ['product'], eng: ['eng', 'engineering'], qa: ['qa'] };

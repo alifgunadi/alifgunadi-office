@@ -71,6 +71,21 @@ module.exports = [
     },
   },
   {
+    name: 'real mode: a prompt without @mention goes to Alif Gunadi (the server defaults to him) and his name is not written into the text',
+    async run(page) {
+      await showTasks(page);
+      await send(page, 'echo tanpa mention');
+      assert.equal(await val(page, `dock.error`), '');
+      await page.waitFor(`taskStore.tasks.some((t) => t.deskId === 'main' && t.status === 'done')`, 8000);
+      const t = await val(page, `JSON.stringify(taskStore.tasks.filter((q) => q.deskId === 'main').map((q) => ({ text: q.text, exitCode: q.exitCode })))`).then(JSON.parse);
+      assert.deepEqual(t, [{ text: 'echo tanpa mention', exitCode: 0 }]);
+      // the same when his own desk is picked as the target: still no "@main" in the text
+      await val(page, `addChip('main'); true`);
+      await send(page, 'echo lewat chip main');
+      await page.waitFor(`taskStore.tasks.some((q) => q.deskId === 'main' && q.text === 'echo lewat chip main' && q.status === 'done')`, 8000);
+    },
+  },
+  {
     name: 'real mode: a failing program shows as failed with its message; a running task asks before it is cancelled, then ends cancelled',
     async run(page) {
       await showTasks(page);
