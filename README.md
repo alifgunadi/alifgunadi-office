@@ -3,6 +3,71 @@
 Live pixel-art office for Claude Code, Antigravity and OpenCode agents. Each role in `~/.claude/agents` (or Antigravity `team-*` plugins) has a fixed desk;
 characters type, wait, or sleep based on hook events.
 
+## Quick start (Windows)
+
+You need **Windows 10/11** and **[Node.js 22 or newer](https://nodejs.org/)**. Nothing else is required for the browser version.
+Check Node with `node --version`.
+
+### 1. Download
+
+Pick one:
+
+```powershell
+git clone https://github.com/alifgunadi/agent-office.git
+cd agent-office
+```
+
+or, without Git: open <https://github.com/alifgunadi/agent-office>, choose **Code → Download ZIP**, extract it somewhere you will keep
+(for example `C:\Tools\agent-office`) and open PowerShell in that folder. Keep the folder: the hooks point at it.
+
+### 2. Install (connect your agents)
+
+```powershell
+node install.js --dry-run     # optional: preview what it will change
+node install.js               # connects Claude Code, Antigravity and OpenCode (whichever you have)
+```
+
+It is safe to run twice and backs up every file it edits. Restart your agents afterwards so they load the hooks.
+There is nothing to `npm install`.
+
+### 3. Open the office
+
+```powershell
+powershell -File start-office.ps1     # starts the server in the background and opens your browser
+```
+
+Start a Claude Code session and the agents appear at their desks. Stop with `powershell -File stop-office.ps1` or the Stop button on the page.
+The server also starts by itself at the beginning of every Claude Code session.
+
+### Optional: desktop app (own window, Desktop and Start Menu icon)
+
+Needs the [.NET 10 SDK](https://dotnet.microsoft.com/download) to build once (the WebView2 Runtime is already part of Windows 11).
+
+```powershell
+dotnet publish desktop\host-dotnet -c Release -o desktop\app
+powershell -ExecutionPolicy Bypass -File desktop\install-shortcut.ps1
+```
+
+Then double-click **Agent Office**. More in [desktop/README.md](desktop/README.md).
+
+### Optional: start every time you log in
+
+```powershell
+powershell -File install-autostart.ps1      # remove with uninstall-autostart.ps1
+```
+
+### Update or uninstall
+
+- **Update:** `git pull` (or download the ZIP again), then `node install.js` and restart the office (Restart button on the page). Rebuild the desktop app only if `desktop\` changed.
+- **Uninstall:** run `stop-office.ps1`, `desktop\uninstall-shortcut.ps1` and `uninstall-autostart.ps1` if you used them, remove the Agent Office entries from `~/.claude/settings.json` (or restore the `.bak-<timestamp>` file `install.js` made), then delete the folder.
+
+### Something does not work?
+
+- Nothing on the page: open <http://127.0.0.1:4317/health>. If it does not answer, run `node server.js` in the folder and read the message; the log is `%TEMP%\agent-office.log`.
+- Port 4317 is taken: see [Change port](#change-port).
+- Desks do not move: restart the agent after `node install.js`, and see the notes for each agent below.
+- Running agents from the page is **off by default**; see [Starting tasks from the page](#starting-tasks-from-the-page-optional-off-by-default) and read [SECURITY.md](SECURITY.md) first.
+
 ## Files
 - `server.js`  - local server (127.0.0.1:4317), no dependencies. Runs with `node` or `bun`.
 - `lib/`       - the office model (`office.js`), input cleaning (`sanitize.js`), shared paths and log rotation, and the installer logic.
